@@ -1,5 +1,5 @@
-# The pam50 Dockerfile only needs containers/pam50-env.yaml and
-# workflow/pkg/pam50perou. Keep the build context small.
+# The pam50 Dockerfile only needs containers/pam50-env.yaml and pam50perou/.
+# Keep the build context small.
 .git
 .github
 results
@@ -7,7 +7,9 @@ logs
 vendor
 docs
 *.pdf
-workflow/scripts
+workflow
 config
+.tests
 DESIGN.md
 README.md
+CITATION.cff
