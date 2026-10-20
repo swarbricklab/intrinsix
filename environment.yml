@@ -1,0 +1,25 @@
+# Portable conda environment for the pam50 package (laptop or HPC; no singularity
+# needed). Create it, then install the package on top:
+#
+#   conda env create -f environment.yml
+#   conda activate pam50
+#   R -e 'remotes::install_local(".")'        # or remotes::install_github("swarbricklab/pam50")
+#
+# A DVC stage can then run:  conda run -n pam50 pam50 run --config config.yaml
+name: pam50
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-base=4.4
+  - r-yaml
+  - r-dplyr
+  - r-data.table
+  - r-cluster
+  - r-ggplot2
+  - r-circlize
+  - r-heatmap.plus
+  - bioconductor-complexheatmap
+  - bioconductor-ctc
+  - bioconductor-impute
+  - r-remotes

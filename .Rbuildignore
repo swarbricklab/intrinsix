@@ -1,11 +1,10 @@
-^workflow$
-^config$
 ^containers$
 ^vendor$
 ^\.tests$
 ^\.github$
 ^\.dockerignore$
 ^\.gitignore$
+^environment\.yml$
 ^DESIGN\.md$
 ^CITATION\.cff$
 ^.*\.Rproj$
@@ -13,4 +12,3 @@
 ^scratch$
 ^_pkgdown\.yml$
 ^docs$
-^\.github/workflows/.*\.yml$

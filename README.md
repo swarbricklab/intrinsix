@@ -1,14 +1,11 @@
 # pam50
 
 [![CI](https://github.com/swarbricklab/pam50/actions/workflows/ci.yml/badge.svg)](https://github.com/swarbricklab/pam50/actions/workflows/ci.yml)
-[![Snakemake](https://img.shields.io/badge/snakemake-%E2%89%A57.32.4-brightgreen.svg)](https://snakemake.github.io)
-[![Code style: snakefmt](https://img.shields.io/badge/code%20style-snakefmt-000000.svg)](https://github.com/snakemake/snakefmt)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-PAM50 intrinsic molecular subtyping of breast-cancer expression data — as **both
-an R package** (`pam50`, for interactive / scripted use) **and a portable
-Snakemake workflow** (to plug into a DVC super-pipeline). One repo, one source of
-truth.
+PAM50 intrinsic molecular subtyping of breast-cancer expression data — an **R
+package** (`pam50`) for interactive / scripted use, with a config-driven
+`pam50 run` pipeline that plugs into a DVC super-pipeline.
 
 It packages the exact Perou Lab PAM50 classifier (published centroids, Spearman
 rank correlation) with optional Zhao4 subtype-specific normalisation, ROR-S/ROR-P
@@ -29,8 +26,7 @@ Two tables (see [`DESIGN.md`](DESIGN.md#input-contract)):
   filtering, subtype grouping, or passthrough metadata.
 
 By default PAM50 is called on **all samples**; set `filter.column` to restrict
-(e.g. to an eligibility flag). Users starting from an `.h5ad` can use the optional
-Python adapter rule.
+(e.g. to an eligibility flag).
 
 ## Use as an R package
 
@@ -57,29 +53,49 @@ pam50 zhao     --expr expr.tsv --samples samples.tsv --subtype-col clinical_subt
 pam50 cluster  --expr-medctr intrinsic_medctr.tsv --outdir out/ --out-claudin claudin_low.txt
 ```
 
-## Use as a Snakemake workflow
+## Run the whole pipeline (config-driven)
+
+`pam50 run` reads a config (filter/dedup → subtype → optional clustering) and
+writes the outputs — the command a DVC stage invokes. A template config ships with
+the package (`system.file("extdata", "config.example.yaml", package = "pam50")`):
 
 ```bash
-snakemake --use-singularity --configfile config/config.yaml --cores 4
+pam50 run --config config.yaml           # or: Rscript -e 'pam50::pam50_run("config.yaml")'
 ```
 
-Each parent DVC pipeline keeps a `pam50` stage whose `cmd` shells out to
-`snakemake`; the parent's preprocessing emits `expression.tsv` + `samples.tsv`.
+### Running environments
+
+The package is pure R, so pick whatever the platform has — **no singularity
+required**:
+
+| Context | Environment | Invocation |
+|---|---|---|
+| Laptop / interactive | native install (`remotes` + `BiocManager`) | `pam50 run --config config.yaml` |
+| Reproducible, any OS | **conda** (`environment.yml`) | `conda run -n pam50 pam50 run --config config.yaml` |
+| HPC, locked-down | singularity image | `module load singularity && singularity exec pam50.sif pam50 run --config config.yaml` |
+
+```bash
+# conda env (portable default)
+conda env create -f environment.yml && conda activate pam50
+R -e 'remotes::install_local(".")'
+```
+
+### DVC integration
+
+Each parent DVC pipeline keeps a `pam50` stage whose `cmd` is one of the above —
+DVC does the stage-level caching; no second workflow engine.
 
 ## Layout
 
-The repo root **is** the R package (`DESCRIPTION`, `R/`, `inst/`); the Snakemake
-workflow sits alongside it (`.Rbuildignore`d from the package build).
+The repo root **is** the R package.
 
 ```
-DESCRIPTION, NAMESPACE, R/, inst/   the pam50 R package (algorithm, data, CLI)
+DESCRIPTION, NAMESPACE, R/, inst/   the pam50 R package (algorithm, data, CLI, runner)
 tests/                              package tests (testthat)
-workflow/Snakefile                  DAG
-workflow/rules/pam50.smk            steps (prepare -> zhao -> classify -> finalize [-> cluster])
-workflow/scripts/                   thin R wrappers (library(pam50) -> call it)
-workflow/envs/                      conda fallback for platforms without singularity
-containers/                         Dockerfile + env for the pam50 image
-config/                             config.yaml (the input contract) + schema
+vignettes/                          'Getting started' vignette
+containers/                         Dockerfile + env for the optional HPC image
+environment.yml                     conda env (portable default)
+inst/extdata/config.example.yaml    config template for `pam50 run`
 vendor/                             unmodified upstream snapshots (provenance)
 ```
 

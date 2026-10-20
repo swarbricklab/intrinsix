@@ -1,16 +1,16 @@
-# PAM50 workflow configuration.
+# Example config for `pam50 run --config config.yaml` (and pam50_run()).
 #
-# The standalone entry point is two tables: an expression matrix (genes x samples,
-# log2-scale normalised, HGNC symbols) and a sample sheet. See DESIGN.md for the
-# full input contract. Validated against workflow/schemas/config.schema.yaml.
+# The input is two tables: an expression matrix (genes x samples, log2-scale
+# normalised, HGNC symbols) and a sample sheet. Copy this file, edit the paths,
+# and run. Schema: inst/extdata/config.schema.yaml.
 
 # -- Inputs -- #
 inputs:
   # Expression matrix: genes (rows, HGNC symbols) x samples (columns),
   # log2-scale normalised values (e.g. log2 UQN, log2(TPM+1)).
-  expression: "config/expression.tsv"
+  expression: "expression.tsv"
   # Sample sheet: one row per sample.
-  samples: "config/samples.tsv"
+  samples: "samples.tsv"
   # Column in `samples` holding the sample IDs (must match expression columns).
   sample_id_column: "sample_id"
 
@@ -48,10 +48,3 @@ intrinsic_clustering:
 # -- Outputs -- #
 outs:
   output_dir: "results/pam50"
-
-# -- Containers -- #
-# Per-tool images. The core workflow is R-only (pam50 image). The python image
-# is used only by the optional h5ad input adapter.
-containers:
-  pam50: "docker://ghcr.io/swarbricklab/pam50:20261020-4"
-  # python: "docker://ghcr.io/swarbricklab/<anndata-image>:<tag>"  # h5ad adapter only

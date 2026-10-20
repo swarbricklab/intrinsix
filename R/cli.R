@@ -64,6 +64,12 @@
   message(sprintf("zhao: wrote %d x %d -> %s", nrow(z), ncol(z), opt$out))
 }
 
+.cli_run <- function(args) {
+  opt <- .pam50_parse(args)
+  .require_opts(opt, "config", "run")
+  pam50_run(opt$config)
+}
+
 .cli_cluster <- function(args) {
   opt <- .pam50_parse(args)
   .require_opts(opt, c("expr-medctr", "outdir"), "cluster")
@@ -79,6 +85,7 @@
 .pam50_usage <- function() {
   message("pam50 <command> [options]\n",
           "\nCommands:\n",
+          "  run       --config config.yaml   (whole pipeline, config-driven)\n",
           "  classify  --expr E.tsv --out S.tsv [--calibration -1] [--collapse mean] [--map-symbols]\n",
           "  zhao      --expr E.tsv --samples M.tsv --subtype-col COL [--id-col sample_id] --out Z.tsv\n",
           "  cluster   --expr-medctr M.tsv --outdir DIR [--out-claudin C.txt]\n")
@@ -86,9 +93,10 @@
 
 #' pam50 command-line entry point
 #'
-#' Dispatches `classify` / `zhao` / `cluster` subcommands to the corresponding
-#' package functions. Invoked by the installed `pam50` executable
-#' (`inst/exec/pam50`), or directly: `pam50::cli(c("classify", "--expr", ...))`.
+#' Dispatches `run` / `classify` / `zhao` / `cluster` subcommands to the
+#' corresponding package functions. `run` executes the whole pipeline from a YAML
+#' config ([pam50_run()]) and is the command a DVC stage invokes. Also callable
+#' directly: `pam50::cli(c("run", "--config", "config.yaml"))`.
 #'
 #' @param args Character vector of command-line arguments (default: the process
 #'   arguments after `--args`).
@@ -100,6 +108,7 @@ cli <- function(args = commandArgs(trailingOnly = TRUE)) {
   }
   cmd <- args[[1]]; rest <- args[-1]
   switch(cmd,
+    run = .cli_run(rest),
     classify = .cli_classify(rest),
     zhao = .cli_zhao(rest),
     cluster = .cli_cluster(rest),

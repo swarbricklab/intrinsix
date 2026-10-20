@@ -24,7 +24,8 @@ Imports:
     graphics,
     grDevices,
     stats,
-    utils
+    utils,
+    yaml
 Suggests:
     ctc,
     impute,

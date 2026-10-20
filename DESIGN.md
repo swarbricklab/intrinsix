@@ -32,22 +32,24 @@ the calls — that is a separate, results-changing (goal-2) decision.
 
 ## Architecture
 
-The repo root **is** the R package `pam50`; the Snakemake workflow sits alongside
-it and is `.Rbuildignore`d from the package build. So one repo serves both the
-interactive/scripted package user and the workflow/DVC consumer.
+The repo root **is** the R package `pam50`. The pipeline is a package function,
+`pam50_run()`, exposed as `pam50 run --config config.yaml` — not a separate
+workflow engine. (A Snakemake workflow existed earlier; once `pam50_subtype()`
+fused the steps into one atomic call, Snakemake's value — per-step env dispatch,
+DAG scheduling, incremental caching — collapsed, so it was retired in favour of
+`pam50 run` + DVC-level caching.)
 
 ```
 DESCRIPTION, NAMESPACE      the pam50 R package manifest (at repo root)
-R/                          exported API (below) + CLI
-inst/extdata/               centroids, annotation, calibration medians,
-                            training set, SIGMA, intrinsic gene list
-inst/exec/pam50             the `pam50` CLI executable
+R/                          exported API (below) + CLI + pam50_run()
+inst/extdata/               centroids, annotation, calibration medians, training
+                            set, SIGMA, intrinsic gene list, config.{example,schema}
+inst/exec/pam50             the `pam50` CLI executable (run/classify/zhao/cluster)
 tests/                      testthat (unit + golden)
+vignettes/                  'Getting started'
+environment.yml             conda env (portable default)
+containers/                 Dockerfile + env (optional HPC image)
 vendor/                     UNMODIFIED upstream snapshots (provenance only)
-workflow/Snakefile          thin DAG
-workflow/rules/pam50.smk    one rule per step, container: directives
-workflow/scripts/           ~5-line wrappers: library(pam50) -> call it -> write
-config/config.yaml          the input contract (below)
 ```
 
 Two containers (mixing Py/R is fine):
@@ -147,10 +149,11 @@ That is the gate for retiring the old `modules/PAM50/`.
 
 ## Consumption by the parent DVC repos
 
-Each parent keeps a single `pam50` DVC stage whose `cmd` shells out to
-`snakemake` (the lab already nests Snakemake under DVC). The parent's
-preprocessing emits `expression.tsv` + `samples.tsv`; DVC tracks deps/outs as
-today.
+Each parent keeps a single `pam50` DVC stage whose `cmd` runs `pam50 run --config
+config.yaml` (in a conda env — the portable default — or the singularity image on
+locked-down HPC). The parent's preprocessing emits `expression.tsv` +
+`samples.tsv`; DVC tracks deps/outs and does the stage-level caching. No second
+workflow engine.
 
 ## Open questions
 

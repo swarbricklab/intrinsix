@@ -77,8 +77,20 @@ pam50_subtype <- function(expr, samples = NULL, subtype_col = NULL,
     int_medctr <- median_center(int_expr)
     cl <- centroid_clustering(int_medctr, write_files = FALSE)
     clow <- identify_claudin_low(cl, int_medctr)
-    res$intrinsic <- list(int_medctr = int_medctr, clusters = cl, claudin_low = clow)
+    res$intrinsic <- list(int_expr = int_expr, int_medctr = int_medctr,
+                          clusters = cl, claudin_low = clow)
     res$calls$Call_CLOW <- ifelse(rownames(res$calls) %in% clow, "CLOW", res$calls$Call)
+
+    # silhouette widths (clusters = CLOW-adjusted calls; 1 - Pearson distance)
+    if (requireNamespace("cluster", quietly = TRUE)) {
+      ids <- rownames(res$calls)
+      cl_idx <- as.numeric(as.factor(res$calls$Call_CLOW))
+      names(cl_idx) <- ids
+      d <- stats::as.dist(1 - stats::cor(int_expr[, ids, drop = FALSE], method = "pearson"))
+      sil <- cluster::silhouette(cl_idx, d)
+      res$calls$silhouette_width <- sil[, 3]
+      res$intrinsic$silhouette <- sil
+    }
   }
 
   structure(res, class = "pam50_result")
