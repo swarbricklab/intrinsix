@@ -1,0 +1,57 @@
+# PAM50 workflow configuration.
+#
+# The standalone entry point is two tables: an expression matrix (genes x samples,
+# log2-scale normalised, HGNC symbols) and a sample sheet. See DESIGN.md for the
+# full input contract. Validated against workflow/schemas/config.schema.yaml.
+
+# -- Inputs -- #
+inputs:
+  # Expression matrix: genes (rows, HGNC symbols) x samples (columns),
+  # log2-scale normalised values (e.g. log2 UQN, log2(TPM+1)).
+  expression: "config/expression.tsv"
+  # Sample sheet: one row per sample.
+  samples: "config/samples.tsv"
+  # Column in `samples` holding the sample IDs (must match expression columns).
+  sample_id_column: "sample_id"
+
+# -- Sample selection -- #
+# Default: no filter => PAM50 is called on ALL samples.
+filter:
+  column: null          # e.g. "is_pam50_eligible"; null = use all samples
+  include: []           # keep rows whose `column` value is in this set
+
+# Optional replicate deduplication (keep one sample per group).
+deduplicate:
+  by: null              # e.g. "tissue_id"; null = no deduplication
+  keep: "first"         # lowest sample id lexically within each group
+  selections: {}        # overrides, e.g. {"3563": "WTS_3563_T0_S6"}
+
+# -- Normalisation -- #
+# Zhao4 subtype-specific quantile centering. Requires a clinical (ER x HER2)
+# subtype column whose values match the SIGMA table columns. Disable for the
+# "all samples, no subtype" case (classifier median-centering is used instead).
+zhao_normalization:
+  enabled: true
+  subtype_column: "clinical_subtype"
+
+# -- Classifier -- #
+classifier:
+  calibration: -1          # Perou calibrationParameters (-1 = none)
+  collapse_method: "mean"  # mean | iqr
+  has_clinical: false      # ROR-C needs a T-stage column; keep false unless provided
+  prefix: "PAM50scores"
+
+# -- Intrinsic clustering / claudin-low -- #
+intrinsic_clustering:
+  enabled: true
+
+# -- Outputs -- #
+outs:
+  output_dir: "results/pam50"
+
+# -- Containers -- #
+# Per-tool images. The core workflow is R-only (pam50 image). The python image
+# is used only by the optional h5ad input adapter.
+containers:
+  pam50: "docker://ghcr.io/swarbricklab/pam50:latest"
+  # python: "docker://ghcr.io/swarbricklab/<anndata-image>:<tag>"  # h5ad adapter only

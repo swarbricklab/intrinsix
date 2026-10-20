@@ -1,0 +1,19 @@
+# Snakemake
+.snakemake/
+results/
+logs/
+
+# R
+.Rproj.user/
+.Rhistory
+.RData
+*.Rcheck/
+pam50perou*.tar.gz
+
+# Python
+__pycache__/
+*.pyc
+
+# Editors / OS
+.vscode/
+.DS_Store

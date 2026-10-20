@@ -1,0 +1,81 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+description: PAM50 workflow configuration
+type: object
+properties:
+  inputs:
+    type: object
+    properties:
+      expression:
+        type: string
+        description: Path to the expression matrix (genes x samples, log2-scale).
+      samples:
+        type: string
+        description: Path to the sample sheet (one row per sample).
+      sample_id_column:
+        type: string
+        description: Column in `samples` holding sample IDs matching expression columns.
+    required: [expression, samples, sample_id_column]
+  filter:
+    type: object
+    properties:
+      column:
+        type: ["string", "null"]
+        description: Column to filter samples on; null uses all samples.
+      include:
+        type: array
+        description: Keep rows whose `column` value is in this set.
+    required: [column]
+  deduplicate:
+    type: object
+    properties:
+      by:
+        type: ["string", "null"]
+      keep:
+        type: string
+        enum: ["first"]
+      selections:
+        type: object
+    required: [by]
+  zhao_normalization:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+      subtype_column:
+        type: ["string", "null"]
+        description: Required when enabled; values must match SIGMA table columns.
+    required: [enabled]
+  classifier:
+    type: object
+    properties:
+      calibration:
+        type: integer
+      collapse_method:
+        type: string
+        enum: ["mean", "iqr"]
+      has_clinical:
+        type: boolean
+      prefix:
+        type: string
+    required: [calibration, collapse_method, has_clinical, prefix]
+  intrinsic_clustering:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+    required: [enabled]
+  outs:
+    type: object
+    properties:
+      output_dir:
+        type: string
+    required: [output_dir]
+  containers:
+    type: object
+    properties:
+      pam50:
+        type: string
+      python:
+        type: string
+    required: [pam50]
+required: [inputs, filter, zhao_normalization, classifier, intrinsic_clustering, outs, containers]

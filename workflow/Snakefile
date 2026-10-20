@@ -1,0 +1,28 @@
+from snakemake.utils import validate, min_version
+
+min_version("7.32.4")
+
+
+configfile: "config/config.yaml"
+
+
+validate(config, "schemas/config.schema.yaml")
+
+OUT = config["outs"]["output_dir"]
+
+
+include: "rules/pam50.smk"
+
+
+# Final targets: the enriched call table, plus the clustering products when enabled.
+_targets = [f"{OUT}/pam50_calls.tsv"]
+if config["intrinsic_clustering"]["enabled"]:
+    _targets += [
+        f"{OUT}/pam50_calls_clow.tsv",
+        f"{OUT}/intrinsic_heatmap/intrinsic_medctr_heatmap.pdf",
+    ]
+
+
+rule all:
+    input:
+        _targets,

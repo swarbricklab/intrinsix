@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this workflow, please cite it and the underlying PAM50 method."
+title: "pam50: a Snakemake workflow for PAM50 intrinsic molecular subtyping"
+type: software
+authors:
+  - family-names: Lobanov
+    given-names: Alec
+    affiliation: "Perou Lab, UNC Lineberger Comprehensive Cancer Center"
+  - family-names: Perou
+    given-names: Charles M.
+    affiliation: "Perou Lab, UNC Lineberger Comprehensive Cancer Center"
+  - name: "Swarbrick Lab, Garvan Institute of Medical Research"
+license: MIT
+repository-code: "https://github.com/swarbricklab/pam50"
+references:
+  - type: article
+    title: "Supervised risk predictor of breast cancer based on intrinsic subtypes"
+    authors:
+      - family-names: Parker
+        given-names: Joel S.
+      - family-names: Perou
+        given-names: Charles M.
+    journal: "Journal of Clinical Oncology"
+    year: 2009
+    volume: 27
+    issue: 8
+    start: 1160
+    end: 1167
+    doi: "10.1200/JCO.2008.18.1370"

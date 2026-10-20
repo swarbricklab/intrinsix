@@ -1,0 +1,14 @@
+Vendored from the perou-lab PAM50 repositories (research scripts), via the
+bcarc_wts submodule pins, on 2026-10-20:
+
+  PAM50_classifier              https://github.com/perou-lab/PAM50_classifier.git
+                                commit 45121d8d6bb01471155e1252591a6dbce1314307
+  PAM50_ER_HER2_normalization   https://github.com/perou-lab/PAM50_ER_HER2_normalization.git
+                                commit 9ba84ebc131a58a18446e235c9422d9802f56671
+
+Original author of the Garvan/Swarbrick driver + Zhao4 + clustering scripts:
+  Alec Lobanov (Perou Lab), with the PAM50 protocol from
+  Arantxa Fernandez-Martinez (Perou Lab).
+
+Files in this directory are UNMODIFIED upstream snapshots kept for provenance.
+The refactored, packaged implementations live in workflow/pkg/pam50perou/R/.
