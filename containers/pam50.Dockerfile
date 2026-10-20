@@ -35,6 +35,7 @@ ENV PATH=/opt/conda/bin:$PATH
 COPY --chown=$MAMBA_USER:$MAMBA_USER DESCRIPTION NAMESPACE LICENSE /tmp/pkg/
 COPY --chown=$MAMBA_USER:$MAMBA_USER R /tmp/pkg/R/
 COPY --chown=$MAMBA_USER:$MAMBA_USER inst /tmp/pkg/inst/
+COPY --chown=$MAMBA_USER:$MAMBA_USER man /tmp/pkg/man/
 RUN R CMD INSTALL --with-keep.source /tmp/pkg && \
     rm -rf /tmp/pkg /tmp/pam50-env.yaml
 
