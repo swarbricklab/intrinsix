@@ -2,7 +2,7 @@ name: pam50
 # Conda fallback for platforms without singularity. The `pam50` container is the
 # primary runtime (see config.containers.pam50); this env reproduces it. The
 # pam50perou package itself is installed on top of this env
-# (R CMD INSTALL workflow/pkg/pam50perou).
+# (R CMD INSTALL pam50perou).
 channels:
   - conda-forge
   - bioconda

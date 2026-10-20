@@ -31,12 +31,17 @@ ARG MAMBA_DOCKERFILE_ACTIVATE=1
 ENV PATH=/opt/conda/bin:$PATH
 
 # --- install the pam50perou package (pure R: fast, no compilation) ---
-COPY --chown=$MAMBA_USER:$MAMBA_USER workflow/pkg/pam50perou /tmp/pam50perou
+COPY --chown=$MAMBA_USER:$MAMBA_USER pam50perou /tmp/pam50perou
 RUN R CMD INSTALL --with-keep.source /tmp/pam50perou && \
     rm -rf /tmp/pam50perou /tmp/pam50-env.yaml
 
-# --- sanity: package loads and reference data is present ---
-RUN Rscript -e 'library(pam50perou); stopifnot(nrow(pam50_centroids()) == 50L, ncol(sigma_table()) >= 4L)'
+# --- expose the `pam50` CLI on PATH ---
+RUN chmod +x /opt/conda/lib/R/library/pam50perou/exec/pam50 && \
+    ln -sf /opt/conda/lib/R/library/pam50perou/exec/pam50 /opt/conda/bin/pam50
+
+# --- sanity: package loads, reference data present, CLI runs ---
+RUN Rscript -e 'library(pam50perou); stopifnot(nrow(pam50_centroids()) == 50L, ncol(sigma_table()) >= 4L)' && \
+    pam50 --help
 
 # Default to a login shell with the env active (singularity exec picks up PATH).
 ENV R_LIBS_USER=/opt/conda/lib/R/library

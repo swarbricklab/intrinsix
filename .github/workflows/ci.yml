@@ -24,12 +24,12 @@ jobs:
         run: Rscript -e 'install.packages("testthat")'
 
       - name: Install pam50perou
-        run: R CMD INSTALL workflow/pkg/pam50perou
+        run: R CMD INSTALL pam50perou
 
       - name: Run golden + unit tests
         run: |
           Rscript -e 'suppressMessages({library(testthat); library(pam50perou)}); \
-            test_dir("workflow/pkg/pam50perou/tests/testthat", stop_on_failure = TRUE)'
+            test_dir("pam50perou/tests/testthat", stop_on_failure = TRUE)'
 
   snakemake:
     name: Snakemake dry-run + lint

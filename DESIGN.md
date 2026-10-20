@@ -1,7 +1,11 @@
 # PAM50 workflow — design
 
-Status: **scaffold** (structure + vendored assets + design frozen; algorithm
-packaging + thin rule scripts + tests are the next milestone).
+Status: **implemented + verified**. Algorithm ported into `pam50perou` (classifier,
+Zhao4, intrinsic clustering, claudin-low), rule wrappers written, container built
+(`ghcr.io/swarbricklab/pam50`), CI + golden tests in place, and a `pam50` CLI.
+Verified byte-identical to the production bcarc_wts pipeline at unit, golden, and
+full end-to-end (containerised, 225 samples) levels. Remaining: switch the two DVC
+parents over; confirm the upstream perou-lab licence before going public.
 
 A standalone, portable Snakemake workflow for PAM50 intrinsic molecular
 subtyping of breast-cancer expression data, extracted from the duplicated
@@ -29,7 +33,7 @@ the calls — that is a separate, results-changing (goal-2) decision.
 ## Architecture
 
 ```
-workflow/pkg/pam50perou/   R package: the algorithm + bundled reference data
+pam50perou/   R package: the algorithm + bundled reference data
   R/                        refactored functions (exported API below)
   inst/extdata/             centroids, annotation, calibration medians,
                             training set, SIGMA, intrinsic gene list

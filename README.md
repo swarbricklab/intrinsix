@@ -34,23 +34,35 @@ By default PAM50 is called on **all samples**; set `filter.column` to restrict
 (e.g. to an eligibility flag). Users starting from an `.h5ad` can use the optional
 Python adapter rule.
 
-## Quick start (target)
+## Quick start
+
+Run the whole workflow:
 
 ```bash
 snakemake --use-singularity --configfile config/config.yaml --cores 4
 ```
 
+Or call the algorithm directly via the `pam50perou` CLI (same functions the rules
+use; available as `pam50` inside the container, or `Rscript -e 'pam50perou::cli()'`):
+
+```bash
+pam50 classify --expr expr.tsv --out scores.tsv [--map-symbols]
+pam50 zhao     --expr expr.tsv --samples samples.tsv --subtype-col clinical_subtype --out zhao.tsv
+pam50 cluster  --expr-medctr intrinsic_medctr.tsv --outdir out/ --out-claudin claudin_low.txt
+```
+
 ## Layout
 
 ```
+pam50perou/                 the algorithm + bundled reference data + CLI (R package)
 workflow/Snakefile          DAG
-workflow/rules/pam50.smk     steps (prepare -> zhao -> classify -> finalize [-> cluster])
-workflow/scripts/            thin R wrappers around pam50perou
-workflow/pkg/pam50perou/     the algorithm + bundled reference data (R package)
-workflow/envs/               conda fallback for platforms without singularity
-config/                      config.yaml (the input contract) + schema
-vendor/                      unmodified upstream snapshots (provenance)
-.tests/                      integration test data + expected calls
+workflow/rules/pam50.smk    steps (prepare -> zhao -> classify -> finalize [-> cluster])
+workflow/scripts/           thin R wrappers around pam50perou
+workflow/envs/              conda fallback for platforms without singularity
+containers/                 Dockerfile + env for the pam50 image
+config/                     config.yaml (the input contract) + schema
+vendor/                     unmodified upstream snapshots (provenance)
+.tests/                     integration test data + expected calls
 ```
 
 ## Attribution & citation
