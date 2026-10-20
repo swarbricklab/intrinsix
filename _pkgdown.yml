@@ -1,0 +1,35 @@
+url: https://swarbricklab.github.io/pam50
+
+template:
+  bootstrap: 5
+
+reference:
+  - title: Subtyping
+    desc: High-level interface and the classifier.
+    contents:
+      - pam50_subtype
+      - pam50_result
+      - predict_pam50
+      - zhao_center
+      - map_to_pam50
+  - title: Intrinsic clustering
+    contents:
+      - centroid_clustering
+      - identify_claudin_low
+      - median_center
+  - title: Visualisations
+    contents:
+      - plot_pam50_scores
+      - plot_pam50_pca
+      - pam50_heatmap
+  - title: Reference data
+    contents:
+      - reference_data
+  - title: Command line
+    contents:
+      - cli
+
+articles:
+  - title: Get started
+    contents:
+      - getting-started

@@ -1,0 +1,24 @@
+citHeader("To cite the pam50 package and the underlying method:")
+
+bibentry(
+  bibtype = "Manual",
+  title   = "pam50: PAM50 intrinsic subtyping (Perou Lab centroids) with Zhao4 normalisation",
+  author  = c(person("Alec", "Lobanov"),
+              person("Charles M.", "Perou"),
+              person("Swarbrick Lab")),
+  year    = "2026",
+  note    = "R package version 0.1.0",
+  url     = "https://github.com/swarbricklab/pam50"
+)
+
+bibentry(
+  bibtype = "Article",
+  title   = "Supervised risk predictor of breast cancer based on intrinsic subtypes",
+  author  = c(person("Joel S.", "Parker"), person("Charles M.", "Perou")),
+  journal = "Journal of Clinical Oncology",
+  year    = "2009",
+  volume  = "27",
+  number  = "8",
+  pages   = "1160-1167",
+  doi     = "10.1200/JCO.2008.18.1370"
+)

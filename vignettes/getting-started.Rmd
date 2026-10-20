@@ -1,0 +1,82 @@
+---
+title: "Getting started with pam50"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with pam50}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 6)
+```
+
+```{r setup}
+library(pam50)
+```
+
+`pam50` assigns breast-cancer samples to the five PAM50 intrinsic subtypes
+(Basal, Her2, LumA, LumB, Normal) using the published Perou Lab centroids, with
+optional Zhao4 subtype-specific normalisation, ROR-S/ROR-P risk scores, intrinsic
+clustering and claudin-low identification. It is the exact algorithm used by the
+Swarbrick Lab PAM50 pipeline — packaged, not reimplemented.
+
+## An expression matrix in, calls out
+
+The high-level entry point is `pam50_subtype()`. Here we use the bundled public
+example (the Perou `PAM50_example` 200-subject matrix, whose rows are already the
+classifier's gene identifiers, so we skip symbol mapping and Zhao normalisation):
+
+```{r}
+expr <- as.matrix(read.table(
+  system.file("extdata", "example_expr_200.tsv", package = "pam50"),
+  sep = "\t", header = TRUE, row.names = 1, check.names = FALSE
+))
+dim(expr)
+
+res <- pam50_subtype(expr, map_symbols = FALSE, zhao = FALSE, calibration = NA)
+res
+```
+
+The result is a `pam50_result`. Inspect it:
+
+```{r}
+summary(res)
+head(as.data.frame(res)[, c("Call", "Confidence", "ROR-S (Subtype Only)")])
+```
+
+## Visualisations
+
+Per-subtype correlation and proliferation (the default `plot()` method):
+
+```{r}
+plot(res)
+```
+
+A training-vs-test PCA places the cohort against the reference set:
+
+```{r, eval = requireNamespace("impute", quietly = TRUE)}
+plot_pam50_pca(res)
+```
+
+## A typical real run
+
+With a gene-symbol expression matrix and a sample sheet carrying clinical
+(ER × HER2) subtype, the usual call enables symbol mapping and Zhao
+normalisation (and optionally intrinsic clustering + claudin-low):
+
+```{r, eval = FALSE}
+res <- pam50_subtype(
+  expr,                          # rows = HGNC symbols
+  samples      = sample_sheet,   # has sample_id + clinical_subtype
+  subtype_col  = "clinical_subtype",
+  cluster      = TRUE            # adds Call_CLOW + $intrinsic
+)
+```
+
+## Reference data and the command line
+
+Bundled reference data is available directly: `pam50_centroids()`,
+`pam50_annotation()`, `sigma_table()`, `intrinsic_genes()`. The same operations
+are reachable from the shell via the `pam50` CLI (`pam50 classify`, `pam50 zhao`,
+`pam50 cluster`).

@@ -1,6 +1,6 @@
 Package: pam50
 Title: PAM50 Intrinsic Subtyping (Perou Lab Centroids) with Zhao4 Normalisation
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: c(
     person("Alec", "Lobanov", role = c("aut"),
            comment = "Original PAM50 driver, Zhao4 normalisation and clustering scripts (Perou Lab)"),
@@ -21,6 +21,8 @@ License: file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1)
 Imports:
+    graphics,
+    grDevices,
     stats,
     utils
 Suggests:
@@ -29,7 +31,13 @@ Suggests:
     cluster,
     ComplexHeatmap,
     circlize,
+    knitr,
+    rmarkdown,
+    pkgdown,
     testthat (>= 3.0.0)
+VignetteBuilder: knitr
+URL: https://github.com/swarbricklab/pam50
+BugReports: https://github.com/swarbricklab/pam50/issues
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.3
 Config/testthat/edition: 3

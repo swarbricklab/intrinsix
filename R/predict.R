@@ -96,6 +96,7 @@
 
   list(
     scores = scores,
+    xd = xd,
     testData = out$testData,
     centroids = out$centroids,
     distances = out$distances,

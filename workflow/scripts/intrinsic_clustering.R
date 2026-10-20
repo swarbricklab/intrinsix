@@ -63,45 +63,17 @@ plot(sil, border = NA, col = c("red", "gold", "pink", "blue", "lightblue", "gree
 abline(v = 0)
 dev.off()
 
-# --- intrinsic heatmap ---
-ok_hm <- requireNamespace("ComplexHeatmap", quietly = TRUE) &&
-  requireNamespace("circlize", quietly = TRUE)
-if (ok_hm) {
-  # Column/row dendrograms from the Cluster 3.0 .atr/.gtr (ctc), else let
-  # ComplexHeatmap cluster internally (visual only; does not affect calls).
-  col_dend <- TRUE; row_dend <- TRUE
-  if (requireNamespace("ctc", quietly = TRUE)) {
-    col_dend <- tryCatch(
-      ctc::xcluster2r(file = file.path(hdir, "intrinsic_expr_medCtr.atr"),
-                      distance = "pearson", labels = FALSE, fast = FALSE, clean = TRUE, dec = "."),
-      error = function(e) { message("xcluster2r(atr) failed; internal clustering"); TRUE })
-    row_dend <- tryCatch(
-      ctc::xcluster2r(file = file.path(hdir, "intrinsic_expr_medCtr.gtr"),
-                      distance = "pearson", labels = FALSE, fast = FALSE, clean = TRUE, dec = "."),
-      error = function(e) { message("xcluster2r(gtr) failed; internal clustering"); TRUE })
-  }
-
-  ann_list <- list("PAM50_zhao4+CLOW" = meta$PAM50_Call_CLOW,
-                   "Silhouette_width" = meta$sil_width_bin)
-  if (!is.null(meta$clinical_subtype)) {
-    ann_list <- c(list("Clinical_subtype" = meta$clinical_subtype), ann_list)
-  }
-  column_ha <- ComplexHeatmap::HeatmapAnnotation(df = as.data.frame(ann_list, check.names = FALSE))
-
-  hm <- ComplexHeatmap::Heatmap(
-    int_medctr, name = "Gene exp.",
-    show_column_names = FALSE, show_row_names = FALSE,
-    top_annotation = column_ha,
-    row_title = "genes", column_title = "samples",
-    cluster_rows = row_dend, cluster_columns = col_dend,
-    col = circlize::colorRamp2(c(-4, 0, 4), c("blue", "black", "yellow")),
-    use_raster = TRUE
-  )
-  pdf(heatmap_out, width = 11, height = 8)
-  ComplexHeatmap::draw(hm, column_title = sprintf("Intrinsic subtype heatmap (n=%d)", nrow(meta)))
-  dev.off()
+# --- intrinsic heatmap (shared pam50::pam50_heatmap) ---
+ann_cols <- c("clinical_subtype", "PAM50_Call_CLOW", "sil_width_bin")
+ann <- meta[, intersect(ann_cols, colnames(meta)), drop = FALSE]
+rownames(ann) <- meta$sample
+if (requireNamespace("ComplexHeatmap", quietly = TRUE)) {
+  pam50_heatmap(int_medctr, annotations = ann[colnames(int_medctr), , drop = FALSE],
+                cluster_dir = hdir,
+                title = sprintf("Intrinsic subtype heatmap (n=%d)", nrow(meta)),
+                file = heatmap_out)
 } else {
-  message("ComplexHeatmap/circlize unavailable; writing placeholder heatmap")
+  message("ComplexHeatmap unavailable; writing placeholder heatmap")
   pdf(heatmap_out); plot.new(); text(0.5, 0.5, "heatmap unavailable"); dev.off()
 }
 message("intrinsic_clustering: done")

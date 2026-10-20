@@ -11,3 +11,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^scratch$
+^_pkgdown\.yml$
+^docs$
+^\.github/workflows/.*\.yml$
