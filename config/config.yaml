@@ -53,5 +53,5 @@ outs:
 # Per-tool images. The core workflow is R-only (pam50 image). The python image
 # is used only by the optional h5ad input adapter.
 containers:
-  pam50: "docker://ghcr.io/swarbricklab/pam50:20261020-2"
+  pam50: "docker://ghcr.io/swarbricklab/pam50:20261020-3"
   # python: "docker://ghcr.io/swarbricklab/<anndata-image>:<tag>"  # h5ad adapter only
