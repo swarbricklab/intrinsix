@@ -1,4 +1,4 @@
-# Command-line interface. Exposes the same pam50perou functions that the Snakemake
+# Command-line interface. Exposes the same pam50 functions that the Snakemake
 # rule wrappers call, so each operation is reachable from both a rule and the shell
 # (the spotty "one function, two front-ends" idea, in R form). Dependency-free:
 # a minimal base-R flag parser, no optparse.
@@ -84,11 +84,11 @@
           "  cluster   --expr-medctr M.tsv --outdir DIR [--out-claudin C.txt]\n")
 }
 
-#' pam50perou command-line entry point
+#' pam50 command-line entry point
 #'
 #' Dispatches `classify` / `zhao` / `cluster` subcommands to the corresponding
 #' package functions. Invoked by the installed `pam50` executable
-#' (`inst/exec/pam50`), or directly: `pam50perou::cli(c("classify", "--expr", ...))`.
+#' (`inst/exec/pam50`), or directly: `pam50::cli(c("classify", "--expr", ...))`.
 #'
 #' @param args Character vector of command-line arguments (default: the process
 #'   arguments after `--args`).

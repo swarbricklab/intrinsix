@@ -1,0 +1,13 @@
+^workflow$
+^config$
+^containers$
+^vendor$
+^\.tests$
+^\.github$
+^\.dockerignore$
+^\.gitignore$
+^DESIGN\.md$
+^CITATION\.cff$
+^.*\.Rproj$
+^\.Rproj\.user$
+^scratch$

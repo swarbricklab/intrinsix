@@ -1,5 +1,0 @@
-#!/usr/bin/env Rscript
-# pam50 CLI entry point. Installed under inst/exec; symlinked onto PATH in the
-# container. Runs pam50perou::cli() on the command-line arguments.
-suppressMessages(library(pam50perou))
-pam50perou::cli()

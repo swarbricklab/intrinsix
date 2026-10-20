@@ -1,5 +1,5 @@
 # Container image for the pam50 workflow: R + the PAM50 dependency stack, with the
-# pam50perou package (algorithm + bundled reference data) installed on top.
+# pam50 package (algorithm + bundled reference data + CLI) installed on top.
 #
 # Build (via absconda, from the repo root so the build context includes the pkg):
 #   module load absconda/0.2.8
@@ -30,17 +30,20 @@ ARG MAMBA_DOCKERFILE_ACTIVATE=1
 # Rscript/R are not found at runtime (only during build via MAMBA_DOCKERFILE_ACTIVATE).
 ENV PATH=/opt/conda/bin:$PATH
 
-# --- install the pam50perou package (pure R: fast, no compilation) ---
-COPY --chown=$MAMBA_USER:$MAMBA_USER pam50perou /tmp/pam50perou
-RUN R CMD INSTALL --with-keep.source /tmp/pam50perou && \
-    rm -rf /tmp/pam50perou /tmp/pam50-env.yaml
+# --- install the pam50 package (pure R: fast, no compilation) ---
+# The package now lives at the repo root; copy just its components into the image.
+COPY --chown=$MAMBA_USER:$MAMBA_USER DESCRIPTION NAMESPACE LICENSE /tmp/pkg/
+COPY --chown=$MAMBA_USER:$MAMBA_USER R /tmp/pkg/R/
+COPY --chown=$MAMBA_USER:$MAMBA_USER inst /tmp/pkg/inst/
+RUN R CMD INSTALL --with-keep.source /tmp/pkg && \
+    rm -rf /tmp/pkg /tmp/pam50-env.yaml
 
 # --- expose the `pam50` CLI on PATH ---
-RUN chmod +x /opt/conda/lib/R/library/pam50perou/exec/pam50 && \
-    ln -sf /opt/conda/lib/R/library/pam50perou/exec/pam50 /opt/conda/bin/pam50
+RUN chmod +x /opt/conda/lib/R/library/pam50/exec/pam50 && \
+    ln -sf /opt/conda/lib/R/library/pam50/exec/pam50 /opt/conda/bin/pam50
 
 # --- sanity: package loads, reference data present, CLI runs ---
-RUN Rscript -e 'library(pam50perou); stopifnot(nrow(pam50_centroids()) == 50L, ncol(sigma_table()) >= 4L)' && \
+RUN Rscript -e 'library(pam50); stopifnot(nrow(pam50_centroids()) == 50L, ncol(sigma_table()) >= 4L)' && \
     pam50 --help
 
 # Default to a login shell with the env active (singularity exec picks up PATH).

@@ -1,6 +1,6 @@
 # Snakemake shim: Zhao4 subtype-specific quantile centering of the PAM50 matrix.
 
-suppressPackageStartupMessages(library(pam50perou))
+suppressPackageStartupMessages(library(pam50))
 
 log <- file(snakemake@log[[1]], open = "wt")
 sink(log, type = "message"); sink(log, type = "output")

@@ -2,7 +2,7 @@
 # format as the reference pipeline (*_pam50scores.txt: tab-separated, empty
 # top-left header cell, sample IDs as row names).
 
-suppressPackageStartupMessages(library(pam50perou))
+suppressPackageStartupMessages(library(pam50))
 
 log <- file(snakemake@log[[1]], open = "wt")
 sink(log, type = "message"); sink(log, type = "output")

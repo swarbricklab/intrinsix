@@ -1,9 +1,9 @@
 # Snakemake shim: prepare PAM50 + intrinsic inputs from the expression matrix and
 # sample sheet. Applies the (generalised) sample filter and optional replicate
 # deduplication, maps to the 50 PAM50 genes, and subsets + median-centres the
-# intrinsic gene matrix. Scientific logic is in pam50perou.
+# intrinsic gene matrix. Scientific logic is in pam50.
 
-suppressPackageStartupMessages(library(pam50perou))
+suppressPackageStartupMessages(library(pam50))
 
 log <- file(snakemake@log[[1]], open = "wt")
 sink(log, type = "message"); sink(log, type = "output")

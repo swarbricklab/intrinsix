@@ -2,7 +2,7 @@ name: pam50
 # Runtime environment for the `pam50` container. Mirrors workflow/envs/pam50.yaml
 # (the conda fallback) plus r-testthat so the image can run the package's test
 # suite in CI. R is pinned to 4.4 (the version the port was verified byte-identical
-# on). The pam50perou package is installed on top of this env in the Dockerfile.
+# on). The pam50 package is installed on top of this env in the Dockerfile.
 channels:
   - conda-forge
   - bioconda

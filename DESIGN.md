@@ -32,15 +32,21 @@ the calls — that is a separate, results-changing (goal-2) decision.
 
 ## Architecture
 
+The repo root **is** the R package `pam50`; the Snakemake workflow sits alongside
+it and is `.Rbuildignore`d from the package build. So one repo serves both the
+interactive/scripted package user and the workflow/DVC consumer.
+
 ```
-pam50perou/   R package: the algorithm + bundled reference data
-  R/                        refactored functions (exported API below)
-  inst/extdata/             centroids, annotation, calibration medians,
+DESCRIPTION, NAMESPACE      the pam50 R package manifest (at repo root)
+R/                          exported API (below) + CLI
+inst/extdata/               centroids, annotation, calibration medians,
                             training set, SIGMA, intrinsic gene list
+inst/exec/pam50             the `pam50` CLI executable
+tests/                      testthat (unit + golden)
 vendor/                     UNMODIFIED upstream snapshots (provenance only)
 workflow/Snakefile          thin DAG
 workflow/rules/pam50.smk    one rule per step, container: directives
-workflow/scripts/           ~5-line wrappers: read -> call pam50perou -> write
+workflow/scripts/           ~5-line wrappers: library(pam50) -> call it -> write
 config/config.yaml          the input contract (below)
 ```
 
@@ -115,10 +121,10 @@ intrinsic_clustering:
 ## Exported package API (target)
 
 ```r
-pam50perou::pam50_annotation()      # bundled reference-data accessors
-pam50perou::pam50_centroids()
-pam50perou::sigma_table()
-pam50perou::intrinsic_genes()
+pam50::pam50_annotation()      # bundled reference-data accessors
+pam50::pam50_centroids()
+pam50::sigma_table()
+pam50::intrinsic_genes()
 
 map_to_pam50(expr, annotation)                 # symbol -> pcrID, subset 50, dedup
 zhao_center(expr, subtypes, sigma)             # Zhao4 quantile centering
@@ -155,9 +161,11 @@ today.
 - **Public test data.** Need a small, redistributable expression matrix with
   known PAM50 calls for the acceptance test + CI (candidate: a public GEO/TCGA
   subset, or the upstream `PAM50_example/sampleInputFile_200subjects.txt`).
-- **Package home.** Vendored inside this repo for v1 (one repo, as requested).
-  Split into its own `swarbricklab/pam50perou` repo later if a second consumer
-  appears.
+- **Package home.** Resolved: one repo serves as both the `pam50` R package (at
+  the root) and the Snakemake workflow (alongside, `.Rbuildignore`d). The package
+  and its rule wrappers are tightly coupled, so a monorepo keeps changes atomic.
+  Split into its own repo only if a second, independent consumer needs the package
+  without the workflow — a trivial move from the root.
 
 ## Attribution
 

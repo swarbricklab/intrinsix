@@ -54,7 +54,7 @@ predict_pam50 <- function(expr, calibration = -1, collapse = "mean",
     xd <- medianCtr(xd)
   } else if (calibration != -1) {
     medians <- readarray(
-      system.file("extdata", "mediansPerDataset_v2.txt", package = "pam50perou"),
+      system.file("extdata", "mediansPerDataset_v2.txt", package = "pam50"),
       hr = 1
     )
     tm <- overlapSets(medians$xd, xd)

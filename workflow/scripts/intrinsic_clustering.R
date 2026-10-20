@@ -1,11 +1,11 @@
 # Snakemake shim: intrinsic clustering, claudin-low identification, silhouette
-# widths, and the intrinsic heatmap. Clustering + claudin-low are in pam50perou;
+# widths, and the intrinsic heatmap. Clustering + claudin-low are in pam50;
 # the heatmap/silhouette plotting (ComplexHeatmap / ctc / cluster) stays here.
 # Unlike the legacy pipeline this writes a NEW call table rather than overwriting
 # an intermediate in place.
 
 suppressPackageStartupMessages({
-  library(pam50perou)
+  library(pam50)
   library(cluster)
 })
 
@@ -31,7 +31,7 @@ heatmap_out <- snakemake@output[["heatmap"]]
 hdir <- dirname(heatmap_out)
 dir.create(hdir, recursive = TRUE, showWarnings = FALSE)
 
-# --- clustering + claudin-low (pam50perou) ---
+# --- clustering + claudin-low (pam50) ---
 res <- centroid_clustering(int_medctr, prefix = "intrinsic_expr_medCtr",
                            path = hdir, write_files = TRUE)
 clow <- identify_claudin_low(res, int_medctr)

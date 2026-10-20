@@ -1,4 +1,4 @@
-Package: pam50perou
+Package: pam50
 Title: PAM50 Intrinsic Subtyping (Perou Lab Centroids) with Zhao4 Normalisation
 Version: 0.0.0.9000
 Authors@R: c(

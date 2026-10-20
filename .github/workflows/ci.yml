@@ -1,6 +1,6 @@
 name: CI
 
-# Data-independent checks. The pam50perou golden tests need only base R + testthat
+# Data-independent checks. The pam50 golden tests need only base R + testthat
 # (the verified classifier/Zhao/clustering paths are pure base R), so the R job is
 # fast and pulls no Bioconductor. A separate job dry-runs the Snakemake workflow.
 on:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   r-package:
-    name: pam50perou tests
+    name: pam50 tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,13 +23,13 @@ jobs:
       - name: Install testthat
         run: Rscript -e 'install.packages("testthat")'
 
-      - name: Install pam50perou
-        run: R CMD INSTALL pam50perou
+      - name: Install pam50
+        run: R CMD INSTALL .
 
       - name: Run golden + unit tests
         run: |
-          Rscript -e 'suppressMessages({library(testthat); library(pam50perou)}); \
-            test_dir("pam50perou/tests/testthat", stop_on_failure = TRUE)'
+          Rscript -e 'suppressMessages({library(testthat); library(pam50)}); \
+            test_dir("tests/testthat", stop_on_failure = TRUE)'
 
   snakemake:
     name: Snakemake dry-run + lint
