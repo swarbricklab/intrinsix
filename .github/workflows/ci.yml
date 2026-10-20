@@ -1,0 +1,90 @@
+name: CI
+
+# Data-independent checks. The pam50perou golden tests need only base R + testthat
+# (the verified classifier/Zhao/clustering paths are pure base R), so the R job is
+# fast and pulls no Bioconductor. A separate job dry-runs the Snakemake workflow.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  r-package:
+    name: pam50perou tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.4"
+          use-public-rspm: true
+
+      - name: Install testthat
+        run: Rscript -e 'install.packages("testthat")'
+
+      - name: Install pam50perou
+        run: R CMD INSTALL workflow/pkg/pam50perou
+
+      - name: Run golden + unit tests
+        run: |
+          Rscript -e 'suppressMessages({library(testthat); library(pam50perou)}); \
+            test_dir("workflow/pkg/pam50perou/tests/testthat", stop_on_failure = TRUE)'
+
+  snakemake:
+    name: Snakemake dry-run + lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-name: smk
+          create-args: >-
+            snakemake=7.32.4
+            jsonschema
+            pandas
+          condarc: |
+            channels:
+              - conda-forge
+              - bioconda
+
+      - name: Placeholder inputs (dry-run checks the DAG, not content)
+        run: |
+          printf 'gene\tS1\tS2\n' > config/expression.tsv
+          printf 'ACTR3B\t0.1\t0.2\n' >> config/expression.tsv
+          printf 'sample_id\tclinical_subtype\n' > config/samples.tsv
+          printf 'S1\tERpos_HER2neg\n' >> config/samples.tsv
+          printf 'S2\tERneg_HER2neg\n' >> config/samples.tsv
+
+      - name: Dry-run (full DAG + config/schema validation)
+        run: snakemake -n --snakefile workflow/Snakefile
+
+      - name: Lint (informational)
+        continue-on-error: true
+        run: snakemake --lint --snakefile workflow/Snakefile
+
+  format:
+    name: snakefmt (informational)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-name: fmt
+          create-args: >-
+            snakefmt
+            go-shfmt
+          condarc: |
+            channels:
+              - conda-forge
+              - bioconda
+      - name: snakefmt check
+        continue-on-error: true
+        run: snakefmt --check workflow/
