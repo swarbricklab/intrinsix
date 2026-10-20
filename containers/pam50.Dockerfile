@@ -25,6 +25,11 @@ RUN micromamba install -y -n base -f /tmp/pam50-env.yaml && \
     micromamba clean --all --yes
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 
+# Put the base env on PATH unconditionally. `singularity exec` bypasses the
+# micromamba entrypoint that would normally activate the env, so without this
+# Rscript/R are not found at runtime (only during build via MAMBA_DOCKERFILE_ACTIVATE).
+ENV PATH=/opt/conda/bin:$PATH
+
 # --- install the pam50perou package (pure R: fast, no compilation) ---
 COPY --chown=$MAMBA_USER:$MAMBA_USER workflow/pkg/pam50perou /tmp/pam50perou
 RUN R CMD INSTALL --with-keep.source /tmp/pam50perou && \
