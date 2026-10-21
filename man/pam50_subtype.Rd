@@ -9,6 +9,7 @@ pam50_subtype(
   samples = NULL,
   subtype_col = NULL,
   layer = NULL,
+  gene_col = NULL,
   zhao = !is.null(subtype_col),
   map_symbols = TRUE,
   calibration = if (zhao) -1 else NA,
@@ -35,6 +36,10 @@ SE/AnnData/h5ad input.}
 
 \item{layer}{For SE/AnnData/h5ad inputs, the assay/layer to use (e.g.
 \code{"log2_uqn"}); defaults to the first assay / \code{X}.}
+
+\item{gene_col}{For SE/AnnData/h5ad inputs, a \code{var}/\code{rowData} column holding the
+gene identifiers to use as row names (e.g. \code{"gene_name"} when the index is
+Ensembl IDs). Defaults to the object's own index.}
 
 \item{zhao}{Logical; apply Zhao4 normalisation. Defaults to \code{TRUE} when
 \code{subtype_col} is supplied, else \code{FALSE}.}

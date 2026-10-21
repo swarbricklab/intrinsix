@@ -49,10 +49,11 @@ pam50_add_samples <- function(reference_expr, reference_samples,
                               zhao = !is.null(subtype_col),
                               calibration = if (zhao) -1 else NA,
                               collapse = "mean", id_col = "sample_id",
-                              map_symbols = TRUE, claudin_low = FALSE, layer = NULL) {
-  ref <- .resolve_input(reference_expr, reference_samples, layer, id_col)
+                              map_symbols = TRUE, claudin_low = FALSE, layer = NULL,
+                              gene_col = NULL) {
+  ref <- .resolve_input(reference_expr, reference_samples, layer, id_col, gene_col = gene_col)
   reference_expr <- as.matrix(ref$expr); reference_samples <- ref$samples
-  nw <- .resolve_input(new_expr, new_samples, layer, id_col)
+  nw <- .resolve_input(new_expr, new_samples, layer, id_col, gene_col = gene_col)
   new_expr <- as.matrix(nw$expr); new_samples <- nw$samples
 
   # Expression columns are the source of truth; align the sheets to them.

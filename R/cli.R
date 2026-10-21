@@ -93,7 +93,7 @@
     calibration = cfg$classifier$calibration %||% -1,
     collapse = cfg$classifier$collapse_method %||% "mean",
     id_col = id_col, map_symbols = cfg$map_symbols %||% TRUE,
-    claudin_low = isTRUE(cfg$claudin_low), layer = cfg$layer
+    claudin_low = isTRUE(cfg$claudin_low), layer = cfg$layer, gene_col = cfg$gene_col
   )
   outpath <- cfg$outs$output
   dir.create(dirname(outpath), recursive = TRUE, showWarnings = FALSE)

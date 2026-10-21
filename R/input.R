@@ -5,7 +5,8 @@
 # SummarizedExperiment and anndataR packages are Suggests, loaded only on demand.
 
 # @noRd
-.resolve_input <- function(object, samples = NULL, layer = NULL, id_col = "sample_id") {
+.resolve_input <- function(object, samples = NULL, layer = NULL, id_col = "sample_id",
+                           gene_col = NULL) {
   # .h5ad path -> anndataR AnnData
   if (is.character(object) && length(object) == 1L && grepl("\\.h5ad$", object, ignore.case = TRUE)) {
     if (!requireNamespace("anndataR", quietly = TRUE)) {
@@ -22,7 +23,14 @@
                    if (is.null(layer)) "X matrix" else sprintf("layer '%s'", layer)), call. = FALSE)
     }
     expr <- t(as.matrix(mat))
-    gnames <- rownames(object$var); if (is.null(gnames)) gnames <- object$var_names
+    if (!is.null(gene_col)) {
+      if (!gene_col %in% colnames(object$var)) {
+        stop(sprintf("gene_col '%s' not in var.", gene_col), call. = FALSE)
+      }
+      gnames <- as.character(object$var[[gene_col]])
+    } else {
+      gnames <- rownames(object$var); if (is.null(gnames)) gnames <- object$var_names
+    }
     snames <- rownames(object$obs); if (is.null(snames)) snames <- object$obs_names
     rownames(expr) <- gnames; colnames(expr) <- snames
     if (is.null(samples)) {
@@ -39,8 +47,14 @@
     }
     expr <- as.matrix(SummarizedExperiment::assay(object, if (is.null(layer)) 1L else layer))
     cd <- as.data.frame(SummarizedExperiment::colData(object))
+    if (!is.null(gene_col)) {
+      rd <- SummarizedExperiment::rowData(object)
+      if (!gene_col %in% colnames(rd)) stop(sprintf("gene_col '%s' not in rowData.", gene_col), call. = FALSE)
+      rownames(expr) <- as.character(rd[[gene_col]])
+    } else if (is.null(rownames(expr))) {
+      rownames(expr) <- rownames(object)
+    }
     if (is.null(colnames(expr))) colnames(expr) <- rownames(cd)
-    if (is.null(rownames(expr))) rownames(expr) <- rownames(object)
     if (is.null(samples)) {
       samples <- cd
       if (!id_col %in% colnames(samples)) samples[[id_col]] <- rownames(cd)

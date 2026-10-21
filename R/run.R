@@ -9,7 +9,7 @@
 .validate_run_config <- function(cfg) {
   need <- function(path, x) if (is.null(x)) stop(sprintf("config: missing '%s'", path), call. = FALSE)
   need("inputs$expression", cfg$inputs$expression)
-  need("inputs$samples", cfg$inputs$samples)
+  # inputs$samples is optional: an h5ad / SummarizedExperiment carries its own obs/colData.
   need("inputs$sample_id_column", cfg$inputs$sample_id_column)
   need("outs$output_dir", cfg$outs$output_dir)
   invisible(TRUE)
@@ -72,7 +72,8 @@ pam50_run <- function(config) {
     as.matrix(utils::read.table(expr_in, sep = "\t", header = TRUE,
                                 row.names = 1, check.names = FALSE))
   }
-  resolved <- .resolve_input(object, samples_in, cfg$inputs$layer, id_col)
+  resolved <- .resolve_input(object, samples_in, cfg$inputs$layer, id_col,
+                             gene_col = cfg$inputs$gene_col)
   expr <- resolved$expr
   samples <- resolved$samples
   if (is.null(samples)) {

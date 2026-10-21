@@ -18,7 +18,11 @@
 #' @export
 map_to_pam50 <- function(expr, annotation = pam50_annotation()) {
   expr <- as.matrix(expr)
+  # Map on the modern HGNC GeneName, and also accept the legacy pcrID itself as a
+  # key, so both modern- and legacy-symbol inputs resolve.
   sym2pcr <- stats::setNames(annotation$pcrID, annotation$GeneName)
+  sym2pcr <- c(sym2pcr, stats::setNames(annotation$pcrID, annotation$pcrID))
+  sym2pcr <- sym2pcr[!duplicated(names(sym2pcr))]
 
   present <- rownames(expr) %in% names(sym2pcr)
   sub <- expr[present, , drop = FALSE]

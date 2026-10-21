@@ -24,6 +24,9 @@
 #'   `samples`. Required when `zhao = TRUE`.
 #' @param layer For SE/AnnData/h5ad inputs, the assay/layer to use (e.g.
 #'   `"log2_uqn"`); defaults to the first assay / `X`.
+#' @param gene_col For SE/AnnData/h5ad inputs, a `var`/`rowData` column holding the
+#'   gene identifiers to use as row names (e.g. `"gene_name"` when the index is
+#'   Ensembl IDs). Defaults to the object's own index.
 #' @param zhao Logical; apply Zhao4 normalisation. Defaults to `TRUE` when
 #'   `subtype_col` is supplied, else `FALSE`.
 #' @param map_symbols Logical; map HGNC symbols to pcrID and subset to the 50
@@ -46,11 +49,11 @@
 #' }
 #' @export
 pam50_subtype <- function(object, samples = NULL, subtype_col = NULL, layer = NULL,
-                          zhao = !is.null(subtype_col), map_symbols = TRUE,
+                          gene_col = NULL, zhao = !is.null(subtype_col), map_symbols = TRUE,
                           calibration = if (zhao) -1 else NA,
                           collapse = "mean", cluster = FALSE,
                           id_col = "sample_id") {
-  resolved <- .resolve_input(object, samples, layer, id_col)
+  resolved <- .resolve_input(object, samples, layer, id_col, gene_col = gene_col)
   expr <- resolved$expr
   samples <- resolved$samples
   pam50_expr <- if (map_symbols) map_to_pam50(expr) else expr

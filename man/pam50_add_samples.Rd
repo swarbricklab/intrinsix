@@ -17,7 +17,8 @@ pam50_add_samples(
   id_col = "sample_id",
   map_symbols = TRUE,
   claudin_low = FALSE,
-  layer = NULL
+  layer = NULL,
+  gene_col = NULL
 )
 }
 \arguments{
