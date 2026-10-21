@@ -113,6 +113,34 @@ test_that("the `intrinsix add` CLI runs a config end to end", {
   expect_equal(sum(res$added), 2L)
 })
 
+test_that("pam50_id_col keeps add drift-proof when gene symbols have drifted", {
+  skip_if_not_installed("SummarizedExperiment")
+  d <- .load_syn()                               # rows are pcrID already
+  m <- d$m
+  rd <- S4Vectors::DataFrame(
+    gene_name = paste0("DRIFT_", seq_len(nrow(m))),  # deliberately non-matching symbols
+    pam50_symbol = rownames(m))                       # the stable classifier pcrID
+  se <- SummarizedExperiment::SummarizedExperiment(
+    assays = list(expr = m), rowData = rd,
+    colData = S4Vectors::DataFrame(d$sm, row.names = d$sm$sample))
+  ref_ids <- c("S1", "S2", "S3", "S4"); new_ids <- c("S5", "S6")
+
+  stable <- suppressWarnings(pam50_add_samples(
+    se[, ref_ids], NULL, se[, new_ids], NULL,
+    subtype_col = "clinical_subtype", id_col = "sample",
+    gene_col = "gene_name", pam50_id_col = "pam50_symbol"))
+
+  # identical to feeding the pcrID matrix directly (map_symbols = FALSE)
+  pcrid <- suppressWarnings(pam50_add_samples(
+    m[, ref_ids], d$sm[d$sm$sample %in% ref_ids, ],
+    m[, new_ids], d$sm[d$sm$sample %in% new_ids, ],
+    subtype_col = "clinical_subtype", id_col = "sample", map_symbols = FALSE))
+
+  expect_identical(rownames(stable), rownames(pcrid))
+  expect_identical(as.character(stable$Call), as.character(pcrid$Call))
+  expect_equal(stable$added, c(FALSE, FALSE, FALSE, FALSE, TRUE, TRUE))
+})
+
 test_that("pam50_add_samples rejects new/reference id collisions", {
   d <- .load_syn()
   expect_error(

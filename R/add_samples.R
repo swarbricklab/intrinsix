@@ -36,6 +36,10 @@
 #'   with the same settings.
 #' @param claudin_low Logical; also recall claudin-low incrementally (adds a
 #'   `Call_CLOW` column). Slow (a clustering per new sample). Default `FALSE`.
+#' @param gene_col,pam50_id_col For SE/AnnData/h5ad inputs, the `var`/`rowData`
+#'   columns giving the gene symbols and (drift-proof) classifier pcrIDs; see
+#'   [pam50_subtype()]. When `pam50_id_col` is set the PAM50 genes are selected via
+#'   the stable IDs on both cohorts.
 #' @param subtype_col,zhao,calibration,collapse,id_col,map_symbols Passed to
 #'   [pam50_subtype()]; the defaults match it (Zhao on when `subtype_col` is given).
 #' @return A data frame of calls for the full cohort: the reference calls
@@ -50,11 +54,18 @@ pam50_add_samples <- function(reference_expr, reference_samples,
                               calibration = if (zhao) -1 else NA,
                               collapse = "mean", id_col = "sample_id",
                               map_symbols = TRUE, claudin_low = FALSE, layer = NULL,
-                              gene_col = NULL) {
-  ref <- .resolve_input(reference_expr, reference_samples, layer, id_col, gene_col = gene_col)
+                              gene_col = NULL, pam50_id_col = NULL) {
+  ref <- .resolve_input(reference_expr, reference_samples, layer, id_col,
+                        gene_col = gene_col, pam50_id_col = pam50_id_col)
   reference_expr <- as.matrix(ref$expr); reference_samples <- ref$samples
-  nw <- .resolve_input(new_expr, new_samples, layer, id_col, gene_col = gene_col)
+  nw <- .resolve_input(new_expr, new_samples, layer, id_col,
+                       gene_col = gene_col, pam50_id_col = pam50_id_col)
   new_expr <- as.matrix(nw$expr); new_samples <- nw$samples
+
+  # Drift-proof PAM50 IDs (from pam50_id_col): positional on the resolved rows, so
+  # name them by gene symbol now to survive the gene intersection/reorder below.
+  ref_pam50_ids <- ref$pam50_ids
+  if (!is.null(ref_pam50_ids)) names(ref_pam50_ids) <- rownames(reference_expr)
 
   # Expression columns are the source of truth; align the sheets to them.
   ref_ids <- colnames(reference_expr)
@@ -75,9 +86,13 @@ pam50_add_samples <- function(reference_expr, reference_samples,
   new_expr <- new_expr[genes, , drop = FALSE]
   cols <- intersect(colnames(reference_samples), colnames(new_samples))
 
+  # Re-align the drift-proof IDs to the common genes (now aligned to every matrix
+  # below, since aug_expr = cbind(reference_expr, new col) keeps this row order).
+  pam50_ids <- if (!is.null(ref_pam50_ids)) unname(ref_pam50_ids[genes]) else NULL
+
   sub_args <- list(subtype_col = subtype_col, zhao = zhao, calibration = calibration,
                    collapse = collapse, cluster = claudin_low, id_col = id_col,
-                   map_symbols = map_symbols)
+                   map_symbols = map_symbols, pam50_ids = pam50_ids)
 
   # Reference calls (kept fixed). Compute once if not supplied.
   if (is.null(reference_calls)) {
