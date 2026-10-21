@@ -3,12 +3,18 @@ bcarc_wts submodule pins, on 2026-10-20:
 
   PAM50_classifier              https://github.com/perou-lab/PAM50_classifier.git
                                 commit 45121d8d6bb01471155e1252591a6dbce1314307
+                                authors: Joel S. Parker & Charles M. Perou (Perou Lab)
+                                (subtypePrediction_distributed.R, subtypePrediction_functions.R,
+                                 pam50_centroids.txt, annotation, calibration medians, training set)
   PAM50_ER_HER2_normalization   https://github.com/perou-lab/PAM50_ER_HER2_normalization.git
                                 commit 9ba84ebc131a58a18446e235c9422d9802f56671
+                                (SIGMA.txt quantiles for Zhao4 normalisation)
 
 Original author of the Garvan/Swarbrick driver + Zhao4 + clustering scripts:
   Alec Lobanov (Perou Lab), with the PAM50 protocol from
   Arantxa Fernandez-Martinez (Perou Lab).
 
 Files in this directory are UNMODIFIED upstream snapshots kept for provenance.
-The refactored, packaged implementations live in workflow/pkg/pam50perou/R/.
+The refactored, packaged implementations live in the package's R/ (repo root):
+R/perou_internal.R + R/predict.R (from subtypePrediction_*.R, Parker & Perou);
+R/perou_plots.R (from subtypePrediction_functions.R + Lobanov).

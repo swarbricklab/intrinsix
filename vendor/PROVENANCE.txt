@@ -1,0 +1,25 @@
+Provenance of the vendored scripts in this directory.
+
+These are UNMODIFIED snapshots kept so the genealogy of the packaged code is
+auditable. The refactored, packaged implementations live in the package's R/
+(at the repo root); see the per-file mapping in README.md ("Provenance &
+genealogy"). Do not edit these snapshots — treat them as read-only references.
+
+perou-lab/
+    Upstream Perou Lab PAM50 research code (Joel S. Parker & Charles M. Perou),
+    plus commit pins and reference-data notes. See perou-lab/PROVENANCE.txt.
+
+Top-level R scripts (author: Alec Lobanov, Perou Lab) — snapshotted from the
+bcarc_wts modules/PAM50 stage on 2026-10-20:
+
+    PAM50_zhao_normalization.R    Zhao4 ER/HER2 subtype-specific quantile centering
+                                  -> packaged as R/zhao.R
+    clustering_scripts.R          Cluster 3.0 centroid-linkage replication
+    cluster3_replicate.R          (.atr/.gtr/.cdt generation)
+    identify_claudin_low.R        claudin-low calling from the cluster tree
+                                  -> the three above packaged as R/clustering.R
+    intrinsic_clustering.R        driver tying clustering + heatmap together
+                                  -> logic folded into R/subtype.R / R/run.R /
+                                     R/perou_plots.R
+
+PAM50 assay protocol: Arantxa Fernandez-Martinez (Perou Lab).

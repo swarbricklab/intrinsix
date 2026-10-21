@@ -2,13 +2,18 @@ Package: intrinsix
 Title: PAM50 Intrinsic Subtyping (Perou Lab Centroids) with Zhao4 Normalisation
 Version: 0.1.0
 Authors@R: c(
-    person("Alec", "Lobanov", role = c("aut"),
-           comment = "Original PAM50 driver, Zhao4 normalisation and clustering scripts (Perou Lab)"),
-    person("Charles", "Perou", role = c("aut", "cph"),
-           comment = "PAM50 classifier and centroids (Perou Lab)"),
-    person("Swarbrick Lab", role = c("cre", "ctb"),
+    person("John", "Reeves", role = c("cre", "aut"),
            email = "j.reeves@garvan.org.au",
-           comment = "Packaging and refactor"))
+           comment = "Packaging, refactor and h5ad/SummarizedExperiment support (Swarbrick Lab)"),
+    person("Alec", "Lobanov", role = "aut",
+           comment = "Original PAM50 driver, Zhao4 normalisation and intrinsic clustering / claudin-low scripts (Perou Lab); most of the recycled R code derives from these"),
+    person("Joel S.", "Parker", role = c("aut", "cph"),
+           comment = "PAM50 subtype-prediction algorithm and R implementation (subtypePrediction_*.R), transcribed here as the classifier and plotting internals (Perou Lab)"),
+    person("Charles M.", "Perou", role = c("aut", "cph"),
+           comment = "PAM50 classifier, published centroids and training data (Perou Lab)"),
+    person("Arantxa", "Fernandez-Martinez", role = "ctb",
+           comment = "PAM50 assay protocol (Perou Lab)"),
+    person("Swarbrick Lab, Garvan Institute of Medical Research", role = "cph"))
 Description: Single-sample PAM50 intrinsic molecular subtyping of breast-cancer
     expression data using the Perou Lab published centroids (Spearman rank
     correlation), with optional Zhao4 subtype-specific quantile centering,

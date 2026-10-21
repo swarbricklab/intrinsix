@@ -17,6 +17,36 @@ Extracted from the previously duplicated `modules/PAM50/` stages in `bcarc_wts`
 and `brca_mega_atlas-data`, which it is intended to replace. Verified
 byte-identical to that pipeline at unit, golden, and full end-to-end levels.
 
+## Provenance & genealogy
+
+**This package is a faithful repackaging of Perou Lab research code — not a
+reimplementation.** The scoring mathematics is unchanged (byte-for-byte), and most
+of the R under `R/` is ported verbatim or transcribed from existing scripts. What
+is new here is packaging: an installable/tested R package, a config-driven runner,
+annotated-object (SE/h5ad) inputs, incremental calling, and documentation. The
+scientific credit for the method and its implementation belongs upstream.
+
+The PAM50 subtype predictor is from **Parker & Perou et al.**, *J Clin Oncol*
+2009. The Garvan/Swarbrick driver, Zhao4 normalisation and intrinsic
+clustering / claudin-low scripts are by **Alec Lobanov** (Perou Lab), with the
+PAM50 assay protocol from **Arantxa Fernandez-Martinez** (Perou Lab). Unmodified
+upstream snapshots and exact commit pins are kept under [`vendor/`](vendor/).
+
+Where each piece of `R/` comes from:
+
+| `intrinsix` source | Derived from | Origin |
+|---|---|---|
+| `R/perou_internal.R` | `subtypePrediction_functions.R` (**verbatim**) | Parker & Perou (Perou Lab) |
+| `R/predict.R` | `subtypePrediction_distributed.R` (**transcribed**) | Parker & Perou (Perou Lab) |
+| `R/perou_plots.R` | `subtypePrediction_functions.R` + intrinsic-clustering script | Parker & Perou; Lobanov |
+| `R/zhao.R` | `PAM50_zhao_normalization.R` | Lobanov (Perou Lab) |
+| `R/clustering.R` | `clustering_scripts.R`, `cluster3_replicate.R`, `identify_claudin_low.R` | Lobanov (Perou Lab) |
+| `inst/extdata/` (centroids, SIGMA, training set, annotation, intrinsic gene list) | PAM50 published reference data | Perou Lab |
+| `R/prepare.R` | logic of `prepare_pam50_input.py` | Swarbrick Lab |
+| `R/data.R`, `input.R`, `subtype.R`, `run.R`, `add_samples.R`, `cli.R` | new packaging / interface code | Swarbrick Lab (Reeves) |
+
+See [Attribution & citation](#attribution--citation) for how to cite.
+
 ## Input
 
 The expression can be a **matrix**, a **SummarizedExperiment / SingleCellExperiment**,
@@ -111,10 +141,21 @@ vendor/                             unmodified upstream snapshots (provenance)
 
 ## Attribution & citation
 
-Core algorithm and the Garvan driver / Zhao4 / clustering scripts:
-**Alec Lobanov** (Perou Lab); PAM50 protocol via Arantxa Fernandez-Martinez
-(Perou Lab). PAM50: Parker et al., *J Clin Oncol* 2009. See
-[`CITATION.cff`](CITATION.cff) and `vendor/perou-lab/PROVENANCE.txt`.
+This package recycles Perou Lab research code heavily (see
+[Provenance & genealogy](#provenance--genealogy) for the per-file breakdown).
+Please credit the originators, not just this package:
+
+- **PAM50 method:** Parker JS, Perou CM, *et al.* "Supervised risk predictor of
+  breast cancer based on intrinsic subtypes." *J Clin Oncol* 2009;27(8):1160–1167.
+  [doi:10.1200/JCO.2008.18.1370](https://doi.org/10.1200/JCO.2008.18.1370)
+- **Classifier R implementation:** Joel S. Parker & Charles M. Perou (Perou Lab).
+- **Driver / Zhao4 / intrinsic clustering / claudin-low scripts:** Alec Lobanov
+  (Perou Lab); PAM50 assay protocol: Arantxa Fernandez-Martinez (Perou Lab).
+- **Packaging & refactor:** John Reeves (Swarbrick Lab, Garvan Institute).
+
+`citation("intrinsix")` lists the software and the method paper. See also
+[`CITATION.cff`](CITATION.cff), [`inst/CITATION`](inst/CITATION), and the
+provenance notes under [`vendor/`](vendor/).
 
 ## Licence
 

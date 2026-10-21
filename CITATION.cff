@@ -6,9 +6,16 @@ authors:
   - family-names: Lobanov
     given-names: Alec
     affiliation: "Perou Lab, UNC Lineberger Comprehensive Cancer Center"
+  - family-names: Parker
+    given-names: Joel S.
+    affiliation: "Perou Lab, UNC Lineberger Comprehensive Cancer Center"
   - family-names: Perou
     given-names: Charles M.
     affiliation: "Perou Lab, UNC Lineberger Comprehensive Cancer Center"
+  - family-names: Reeves
+    given-names: John
+    affiliation: "Swarbrick Lab, Garvan Institute of Medical Research"
+    email: j.reeves@garvan.org.au
   - name: "Swarbrick Lab, Garvan Institute of Medical Research"
 license: MIT
 repository-code: "https://github.com/swarbricklab/intrinsix"

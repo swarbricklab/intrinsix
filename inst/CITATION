@@ -4,10 +4,12 @@ bibentry(
   bibtype = "Manual",
   title   = "intrinsix: PAM50 intrinsic subtyping (Perou Lab centroids) with Zhao4 normalisation",
   author  = c(person("Alec", "Lobanov"),
+              person("Joel S.", "Parker"),
               person("Charles M.", "Perou"),
-              person("Swarbrick Lab")),
+              person("John", "Reeves"),
+              person("Swarbrick Lab, Garvan Institute of Medical Research")),
   year    = "2026",
-  note    = "R package version 0.1.0",
+  note    = "R package version 0.1.0; repackages Perou Lab PAM50 research code (see DESCRIPTION and vendor/ provenance)",
   url     = "https://github.com/swarbricklab/intrinsix"
 )
 
