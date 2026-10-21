@@ -19,6 +19,9 @@ and a Snakemake workflow.
 * `pam50_subtype()` — one call from an expression matrix to a `pam50_result`
   (map → optional Zhao → classify → optional intrinsic clustering).
 * `pam50_result` S3 class with `print()`, `summary()`, `plot()`, `as.data.frame()`.
+* `pam50_add_samples()` — incremental calling: add new samples to an
+  already-called cohort one at a time (Perou-recommended), keeping prior calls
+  fixed.
 
 ## Visualisations (ported from the Perou Lab / Alec Lobanov scripts)
 

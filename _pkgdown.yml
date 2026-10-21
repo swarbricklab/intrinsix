@@ -8,6 +8,7 @@ reference:
     desc: High-level interface and the classifier.
     contents:
       - pam50_subtype
+      - pam50_add_samples
       - pam50_result
       - predict_pam50
       - zhao_center
