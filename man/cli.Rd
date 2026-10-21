@@ -14,8 +14,9 @@ arguments after \code{--args}).}
 Invisibly \code{0} on success; stops on error.
 }
 \description{
-Dispatches \code{run} / \code{classify} / \code{zhao} / \code{cluster} subcommands to the
+Dispatches \code{run} / \code{add} / \code{classify} / \code{zhao} / \code{cluster} subcommands to the
 corresponding package functions. \code{run} executes the whole pipeline from a YAML
-config (\code{\link[=pam50_run]{pam50_run()}}) and is the command a DVC stage invokes. Also callable
-directly: \code{pam50::cli(c("run", "--config", "config.yaml"))}.
+config (\code{\link[=pam50_run]{pam50_run()}}); \code{add} does incremental calling of new samples against a
+fixed reference (\code{\link[=pam50_add_samples]{pam50_add_samples()}}). Both are the commands DVC stages invoke.
+Also callable directly: \code{pam50::cli(c("run", "--config", "config.yaml"))}.
 }

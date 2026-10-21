@@ -1,0 +1,29 @@
+# Example config for `pam50 add` — incremental calling of NEW samples against a
+# FIXED reference cohort (Perou one-at-a-time rule). Pairs with `pam50 run`, which
+# produces the reference cohort's calls. Existing calls are never shifted.
+#
+#   pam50 add --config config.add.yaml
+
+sample_id_column: "sample_id"
+subtype_column: "clinical_subtype"   # for Zhao4; omit/null to disable Zhao
+zhao: true
+classifier:
+  calibration: -1          # -1 after Zhao (no further centring)
+  collapse_method: "mean"
+claudin_low: false         # true = also recall claudin-low incrementally (slow)
+map_symbols: true          # expression rows are HGNC symbols
+
+# The frozen reference cohort (already called). `calls` is the stage-1 scores file
+# (PAM50scores_*.txt); if omitted, the reference is recomputed from its expression.
+reference:
+  expression: "reference_expr.tsv"
+  samples: "reference_samples.tsv"
+  calls: "reference_scores.tsv"
+
+# The new samples to add.
+new:
+  expression: "new_expr.tsv"
+  samples: "new_samples.tsv"
+
+outs:
+  output: "results/pam50/pam50_calls_full.tsv"

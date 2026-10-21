@@ -80,6 +80,39 @@ test_that("claudin_low = TRUE recalls CLOW incrementally with reference fixed", 
                    as.character(ref_only$calls[ref_ids, "Call_CLOW"]))
 })
 
+test_that("the `pam50 add` CLI runs a config end to end", {
+  d <- .load_syn()
+  td <- withr::local_tempdir()
+  ref_ids <- c("S1", "S2", "S3", "S4"); new_ids <- c("S5", "S6")
+  write.table(data.frame(gene = rownames(d$m), d$m[, ref_ids], check.names = FALSE),
+              file.path(td, "ref_expr.tsv"), sep = "\t", row.names = FALSE, quote = FALSE)
+  write.table(data.frame(gene = rownames(d$m), d$m[, new_ids], check.names = FALSE),
+              file.path(td, "new_expr.tsv"), sep = "\t", row.names = FALSE, quote = FALSE)
+  write.table(d$sm[d$sm$sample %in% ref_ids, ], file.path(td, "ref_sm.tsv"),
+              sep = "\t", row.names = FALSE, quote = FALSE)
+  write.table(d$sm[d$sm$sample %in% new_ids, ], file.path(td, "new_sm.tsv"),
+              sep = "\t", row.names = FALSE, quote = FALSE)
+  cfg <- list(
+    sample_id_column = "sample", subtype_column = "clinical_subtype", zhao = TRUE,
+    classifier = list(calibration = -1, collapse_method = "mean"),
+    claudin_low = FALSE, map_symbols = FALSE,
+    reference = list(expression = file.path(td, "ref_expr.tsv"),
+                     samples = file.path(td, "ref_sm.tsv")),
+    new = list(expression = file.path(td, "new_expr.tsv"),
+               samples = file.path(td, "new_sm.tsv")),
+    outs = list(output = file.path(td, "out", "calls_full.tsv"))
+  )
+  yaml::write_yaml(cfg, file.path(td, "add.yaml"))
+
+  suppressWarnings(cli(c("add", "--config", file.path(td, "add.yaml"))))
+
+  res <- read.table(file.path(td, "out", "calls_full.tsv"), sep = "\t",
+                    header = TRUE, check.names = FALSE)
+  expect_equal(nrow(res), 6L)
+  expect_true("added" %in% colnames(res))
+  expect_equal(sum(res$added), 2L)
+})
+
 test_that("pam50_add_samples rejects new/reference id collisions", {
   d <- .load_syn()
   expect_error(

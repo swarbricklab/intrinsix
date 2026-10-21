@@ -70,6 +70,36 @@
   pam50_run(opt$config)
 }
 
+.cli_add <- function(args) {
+  opt <- .pam50_parse(args)
+  .require_opts(opt, "config", "add")
+  cfg <- yaml::read_yaml(opt$config)
+  id_col <- cfg$sample_id_column %||% "sample_id"
+  read_sheet <- function(p) utils::read.table(p, sep = "\t", header = TRUE,
+                                              check.names = FALSE, stringsAsFactors = FALSE)
+  ref_calls <- NULL
+  if (!is.null(cfg$reference$calls)) {
+    ref_calls <- utils::read.table(cfg$reference$calls, sep = "\t", header = TRUE,
+                                   row.names = 1, check.names = FALSE)
+  }
+  out <- pam50_add_samples(
+    .read_matrix(cfg$reference$expression), read_sheet(cfg$reference$samples),
+    .read_matrix(cfg$new$expression), read_sheet(cfg$new$samples),
+    reference_calls = ref_calls, subtype_col = cfg$subtype_column,
+    zhao = cfg$zhao %||% !is.null(cfg$subtype_column),
+    calibration = cfg$classifier$calibration %||% -1,
+    collapse = cfg$classifier$collapse_method %||% "mean",
+    id_col = id_col, map_symbols = cfg$map_symbols %||% TRUE,
+    claudin_low = isTRUE(cfg$claudin_low)
+  )
+  outpath <- cfg$outs$output
+  dir.create(dirname(outpath), recursive = TRUE, showWarnings = FALSE)
+  df <- data.frame(id = rownames(out), out, check.names = FALSE, row.names = NULL)
+  colnames(df)[1] <- id_col
+  utils::write.table(df, outpath, sep = "\t", row.names = FALSE, quote = FALSE)
+  message(sprintf("pam50 add: %d calls (%d new) -> %s", nrow(out), sum(out$added), outpath))
+}
+
 .cli_cluster <- function(args) {
   opt <- .pam50_parse(args)
   .require_opts(opt, c("expr-medctr", "outdir"), "cluster")
@@ -86,6 +116,7 @@
   message("pam50 <command> [options]\n",
           "\nCommands:\n",
           "  run       --config config.yaml   (whole pipeline, config-driven)\n",
+          "  add       --config add.yaml      (incremental: new samples vs a fixed reference)\n",
           "  classify  --expr E.tsv --out S.tsv [--calibration -1] [--collapse mean] [--map-symbols]\n",
           "  zhao      --expr E.tsv --samples M.tsv --subtype-col COL [--id-col sample_id] --out Z.tsv\n",
           "  cluster   --expr-medctr M.tsv --outdir DIR [--out-claudin C.txt]\n")
@@ -93,10 +124,11 @@
 
 #' pam50 command-line entry point
 #'
-#' Dispatches `run` / `classify` / `zhao` / `cluster` subcommands to the
+#' Dispatches `run` / `add` / `classify` / `zhao` / `cluster` subcommands to the
 #' corresponding package functions. `run` executes the whole pipeline from a YAML
-#' config ([pam50_run()]) and is the command a DVC stage invokes. Also callable
-#' directly: `pam50::cli(c("run", "--config", "config.yaml"))`.
+#' config ([pam50_run()]); `add` does incremental calling of new samples against a
+#' fixed reference ([pam50_add_samples()]). Both are the commands DVC stages invoke.
+#' Also callable directly: `pam50::cli(c("run", "--config", "config.yaml"))`.
 #'
 #' @param args Character vector of command-line arguments (default: the process
 #'   arguments after `--args`).
@@ -109,6 +141,7 @@ cli <- function(args = commandArgs(trailingOnly = TRUE)) {
   cmd <- args[[1]]; rest <- args[-1]
   switch(cmd,
     run = .cli_run(rest),
+    add = .cli_add(rest),
     classify = .cli_classify(rest),
     zhao = .cli_zhao(rest),
     cluster = .cli_cluster(rest),
