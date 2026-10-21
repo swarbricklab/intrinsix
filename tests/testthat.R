@@ -1,4 +1,4 @@
 library(testthat)
-library(pam50)
+library(intrinsix)
 
-test_check("pam50")
+test_check("intrinsix")

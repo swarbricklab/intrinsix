@@ -80,7 +80,7 @@ test_that("claudin_low = TRUE recalls CLOW incrementally with reference fixed", 
                    as.character(ref_only$calls[ref_ids, "Call_CLOW"]))
 })
 
-test_that("the `pam50 add` CLI runs a config end to end", {
+test_that("the `intrinsix add` CLI runs a config end to end", {
   d <- .load_syn()
   td <- withr::local_tempdir()
   ref_ids <- c("S1", "S2", "S3", "S4"); new_ids <- c("S5", "S6")

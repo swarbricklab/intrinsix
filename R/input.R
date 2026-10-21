@@ -1,4 +1,4 @@
-# Input normalisation. pam50 accepts the expression as a plain matrix, a
+# Input normalisation. intrinsix accepts the expression as a plain matrix, a
 # SummarizedExperiment / SingleCellExperiment, an AnnData object (anndataR), or a
 # path to an .h5ad file. .resolve_input() turns any of these into a plain
 # (expression matrix [genes x samples], sample-sheet data.frame) pair. The

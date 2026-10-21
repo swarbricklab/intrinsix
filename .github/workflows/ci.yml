@@ -1,6 +1,6 @@
 name: CI
 
-# The pam50 golden + unit tests need only base R + testthat (the verified
+# The intrinsix golden + unit tests need only base R + testthat (the verified
 # classifier / Zhao / clustering paths are pure base R), so CI is fast and pulls
 # no Bioconductor. The pipeline runner (pam50_run) is exercised by test-run.R.
 on:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   r-package:
-    name: pam50 tests
+    name: intrinsix tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,15 +23,15 @@ jobs:
       - name: Install test dependencies
         run: Rscript -e 'install.packages(c("testthat", "withr", "yaml"))'
 
-      - name: Install pam50
+      - name: Install intrinsix
         run: R CMD INSTALL .
 
       - name: Run golden + unit tests
         run: |
-          Rscript -e 'suppressMessages({library(testthat); library(pam50)}); \
+          Rscript -e 'suppressMessages({library(testthat); library(intrinsix)}); \
             test_dir("tests/testthat", stop_on_failure = TRUE)'
 
       - name: CLI smoke test
         run: |
-          pkg=$(Rscript -e 'cat(system.file(package="pam50"))')
-          "$pkg/exec/pam50" --help
+          pkg=$(Rscript -e 'cat(system.file(package = "intrinsix"))')
+          "$pkg/exec/intrinsix" --help

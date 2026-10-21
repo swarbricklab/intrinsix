@@ -1,4 +1,4 @@
-Package: pam50
+Package: intrinsix
 Title: PAM50 Intrinsic Subtyping (Perou Lab Centroids) with Zhao4 Normalisation
 Version: 0.1.0
 Authors@R: c(
@@ -39,8 +39,8 @@ Suggests:
     pkgdown,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
-URL: https://github.com/swarbricklab/pam50
-BugReports: https://github.com/swarbricklab/pam50/issues
+URL: https://github.com/swarbricklab/intrinsix
+BugReports: https://github.com/swarbricklab/intrinsix/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Config/testthat/edition: 3

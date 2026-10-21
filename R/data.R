@@ -11,7 +11,7 @@ NULL
 #' @export
 pam50_annotation <- function() {
   utils::read.delim(
-    system.file("extdata", "pam50_annotation.txt", package = "pam50"),
+    system.file("extdata", "pam50_annotation.txt", package = "intrinsix"),
     stringsAsFactors = FALSE
   )
 }
@@ -20,7 +20,7 @@ pam50_annotation <- function() {
 #' @export
 pam50_centroids <- function() {
   utils::read.table(
-    system.file("extdata", "pam50_centroids.txt", package = "pam50"),
+    system.file("extdata", "pam50_centroids.txt", package = "intrinsix"),
     sep = "\t", header = TRUE, row.names = 1
   )
 }
@@ -29,7 +29,7 @@ pam50_centroids <- function() {
 #' @export
 sigma_table <- function() {
   utils::read.table(
-    system.file("extdata", "SIGMA.txt", package = "pam50"),
+    system.file("extdata", "SIGMA.txt", package = "intrinsix"),
     sep = "\t", header = TRUE, row.names = 1
   )
 }
@@ -38,7 +38,7 @@ sigma_table <- function() {
 #' @export
 intrinsic_genes <- function() {
   utils::read.delim(
-    system.file("extdata", "intrinsic_subtype_gene_list.txt", package = "pam50"),
+    system.file("extdata", "intrinsic_subtype_gene_list.txt", package = "intrinsix"),
     stringsAsFactors = FALSE
   )
 }
@@ -46,5 +46,5 @@ intrinsic_genes <- function() {
 #' @describeIn reference_data Training set (visualisation only; 220 arrays + 12 normal).
 #' @export
 training_set <- function() {
-  system.file("extdata", "trainingset_220arrays_50g.txt", package = "pam50")
+  system.file("extdata", "trainingset_220arrays_50g.txt", package = "intrinsix")
 }

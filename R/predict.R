@@ -34,7 +34,7 @@
     xd <- medianCtr(xd)
   } else if (calibration != -1) {
     medians <- readarray(
-      system.file("extdata", "mediansPerDataset_v2.txt", package = "pam50"),
+      system.file("extdata", "mediansPerDataset_v2.txt", package = "intrinsix"),
       hr = 1
     )
     tm <- overlapSets(medians$xd, xd)

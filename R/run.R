@@ -1,6 +1,6 @@
 # Config-driven whole-pipeline runner. Collapses what the (now retired) Snakemake
 # rules did into one call: read config -> filter/dedup samples -> pam50_subtype()
-# -> write the output files. Reachable as pam50_run() or `pam50 run --config ...`,
+# -> write the output files. Reachable as pam50_run() or `intrinsix run --config ...`,
 # and intended to be the command a DVC stage invokes (in a conda env or container).
 
 `%||%` <- function(a, b) if (is.null(a)) b else a
@@ -46,12 +46,12 @@
 #' expression matrix + sample sheet, applies the (optional) sample filter and
 #' replicate deduplication, runs [pam50_subtype()] (map -> optional Zhao ->
 #' classify -> optional intrinsic clustering), and writes the outputs. This is the
-#' command a DVC stage invokes (via `pam50 run --config config.yaml`), in a conda
+#' command a DVC stage invokes (via `intrinsix run --config config.yaml`), in a conda
 #' environment or the container.
 #'
 #' @param config Path to a YAML config, or an already-parsed config list. See
 #'   the bundled template: `system.file("extdata", "config.example.yaml",
-#'   package = "pam50")`.
+#'   package = "intrinsix")`.
 #' @return The [pam50_result], invisibly. Side effect: writes to
 #'   `config$outs$output_dir`.
 #' @export

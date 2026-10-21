@@ -1,8 +1,8 @@
-# Example config for `pam50 add` — incremental calling of NEW samples against a
-# FIXED reference cohort (Perou one-at-a-time rule). Pairs with `pam50 run`, which
+# Example config for `intrinsix add` — incremental calling of NEW samples against a
+# FIXED reference cohort (Perou one-at-a-time rule). Pairs with `intrinsix run`, which
 # produces the reference cohort's calls. Existing calls are never shifted.
 #
-#   pam50 add --config config.add.yaml
+#   intrinsix add --config config.add.yaml
 
 sample_id_column: "sample_id"
 subtype_column: "clinical_subtype"   # for Zhao4; omit/null to disable Zhao
@@ -26,4 +26,4 @@ new:
   samples: "new_samples.tsv"
 
 outs:
-  output: "results/pam50/pam50_calls_full.tsv"
+  output: "results/intrinsix/pam50_calls_full.tsv"

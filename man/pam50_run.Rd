@@ -8,7 +8,7 @@ pam50_run(config)
 }
 \arguments{
 \item{config}{Path to a YAML config, or an already-parsed config list. See
-the bundled template: \code{system.file("extdata", "config.example.yaml", package = "pam50")}.}
+the bundled template: \code{system.file("extdata", "config.example.yaml", package = "intrinsix")}.}
 }
 \value{
 The \link{pam50_result}, invisibly. Side effect: writes to
@@ -19,6 +19,6 @@ End-to-end, config-driven run that replaces the Snakemake workflow: reads the
 expression matrix + sample sheet, applies the (optional) sample filter and
 replicate deduplication, runs \code{\link[=pam50_subtype]{pam50_subtype()}} (map -> optional Zhao ->
 classify -> optional intrinsic clustering), and writes the outputs. This is the
-command a DVC stage invokes (via \verb{pam50 run --config config.yaml}), in a conda
+command a DVC stage invokes (via \verb{intrinsix run --config config.yaml}), in a conda
 environment or the container.
 }

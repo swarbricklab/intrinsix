@@ -41,7 +41,7 @@ test_that("pam50_run validates required config keys", {
 })
 
 test_that("the bundled example config parses", {
-  cfg <- yaml::read_yaml(system.file("extdata", "config.example.yaml", package = "pam50"))
+  cfg <- yaml::read_yaml(system.file("extdata", "config.example.yaml", package = "intrinsix"))
   expect_true(!is.null(cfg$inputs$expression))
   expect_true(!is.null(cfg$outs$output_dir))
 })

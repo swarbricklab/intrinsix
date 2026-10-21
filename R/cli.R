@@ -1,11 +1,11 @@
-# Command-line interface. Exposes the same pam50 functions that the Snakemake
-# rule wrappers call, so each operation is reachable from both a rule and the shell
-# (the spotty "one function, two front-ends" idea, in R form). Dependency-free:
+# Command-line interface. Exposes the same intrinsix functions used from R, so each
+# operation is reachable from both a DVC stage / the shell and an R session (the
+# spotty "one function, two front-ends" idea, in R form). Dependency-free:
 # a minimal base-R flag parser, no optparse.
 #
-#   pam50 classify --expr E.tsv --out S.tsv [--calibration -1] [--collapse mean] [--map-symbols]
-#   pam50 zhao     --expr E.tsv --samples M.tsv --subtype-col clinical_subtype [--id-col sample_id] --out Z.tsv
-#   pam50 cluster  --expr-medctr M.tsv --outdir DIR [--out-claudin C.txt]
+#   intrinsix classify --expr E.tsv --out S.tsv [--calibration -1] [--collapse mean] [--map-symbols]
+#   intrinsix zhao     --expr E.tsv --samples M.tsv --subtype-col clinical_subtype [--id-col sample_id] --out Z.tsv
+#   intrinsix cluster  --expr-medctr M.tsv --outdir DIR [--out-claudin C.txt]
 
 .pam50_parse <- function(args) {
   out <- list()
@@ -33,7 +33,7 @@
 .require_opts <- function(opt, needed, cmd) {
   miss <- needed[!needed %in% names(opt)]
   if (length(miss)) {
-    stop(sprintf("pam50 %s: missing required option(s): %s",
+    stop(sprintf("intrinsix %s: missing required option(s): %s",
                  cmd, paste0("--", miss, collapse = ", ")), call. = FALSE)
   }
 }
@@ -100,7 +100,7 @@
   df <- data.frame(id = rownames(out), out, check.names = FALSE, row.names = NULL)
   colnames(df)[1] <- id_col
   utils::write.table(df, outpath, sep = "\t", row.names = FALSE, quote = FALSE)
-  message(sprintf("pam50 add: %d calls (%d new) -> %s", nrow(out), sum(out$added), outpath))
+  message(sprintf("intrinsix add: %d calls (%d new) -> %s", nrow(out), sum(out$added), outpath))
 }
 
 .cli_cluster <- function(args) {
@@ -116,7 +116,7 @@
 }
 
 .pam50_usage <- function() {
-  message("pam50 <command> [options]\n",
+  message("intrinsix <command> [options]\n",
           "\nCommands:\n",
           "  run       --config config.yaml   (whole pipeline, config-driven)\n",
           "  add       --config add.yaml      (incremental: new samples vs a fixed reference)\n",
@@ -125,13 +125,13 @@
           "  cluster   --expr-medctr M.tsv --outdir DIR [--out-claudin C.txt]\n")
 }
 
-#' pam50 command-line entry point
+#' intrinsix command-line entry point
 #'
 #' Dispatches `run` / `add` / `classify` / `zhao` / `cluster` subcommands to the
 #' corresponding package functions. `run` executes the whole pipeline from a YAML
 #' config ([pam50_run()]); `add` does incremental calling of new samples against a
 #' fixed reference ([pam50_add_samples()]). Both are the commands DVC stages invoke.
-#' Also callable directly: `pam50::cli(c("run", "--config", "config.yaml"))`.
+#' Also callable directly: `intrinsix::cli(c("run", "--config", "config.yaml"))`.
 #'
 #' @param args Character vector of command-line arguments (default: the process
 #'   arguments after `--args`).

@@ -1,7 +1,7 @@
-# pam50 0.1.0
+# intrinsix 0.1.0
 
-First packaged release — an installable R package (`pam50`) with a config-driven
-`pam50 run` pipeline.
+First packaged release — an installable R package (`intrinsix`) with a config-driven
+`intrinsix run` pipeline.
 
 ## Inputs
 
@@ -38,4 +38,4 @@ First packaged release — an installable R package (`pam50`) with a config-driv
 
 ## Command line
 
-* `pam50` CLI (`classify` / `zhao` / `cluster`) over the same functions.
+* `intrinsix` CLI (`classify` / `zhao` / `cluster`) over the same functions.

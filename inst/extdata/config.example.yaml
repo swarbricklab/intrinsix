@@ -1,4 +1,4 @@
-# Example config for `pam50 run --config config.yaml` (and pam50_run()).
+# Example config for `intrinsix run --config config.yaml` (and pam50_run()).
 #
 # The input is two tables: an expression matrix (genes x samples, log2-scale
 # normalised, HGNC symbols) and a sample sheet. Copy this file, edit the paths,
@@ -49,4 +49,4 @@ intrinsic_clustering:
 
 # -- Outputs -- #
 outs:
-  output_dir: "results/pam50"
+  output_dir: "results/intrinsix"

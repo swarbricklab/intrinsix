@@ -14,7 +14,7 @@ copies or substantial portions of the Software.
 
 NOTE: This licence covers the Swarbrick Lab workflow code only. The vendored
 PAM50 classifier and Zhao normalisation code under vendor/perou-lab/ and the
-reference data bundled in workflow/pkg/pam50perou/inst/extdata/ originate from
+reference data bundled in inst/extdata/ originate from
 the Perou Lab (https://github.com/perou-lab) and retain their own terms; see
 vendor/perou-lab/PROVENANCE.txt. Confirm upstream licensing before relying on
 this notice for those components.

@@ -1,12 +1,12 @@
-# Portable conda environment for the pam50 package (laptop or HPC; no singularity
+# Portable conda environment for the intrinsix package (laptop or HPC; no singularity
 # needed). Create it, then install the package on top:
 #
 #   conda env create -f environment.yml
-#   conda activate pam50
-#   R -e 'remotes::install_local(".")'        # or remotes::install_github("swarbricklab/pam50")
+#   conda activate intrinsix
+#   R -e 'remotes::install_local(".")'        # or remotes::install_github("swarbricklab/intrinsix")
 #
-# A DVC stage can then run:  conda run -n pam50 pam50 run --config config.yaml
-name: pam50
+# A DVC stage can then run:  conda run -n intrinsix intrinsix run --config config.yaml
+name: intrinsix
 channels:
   - conda-forge
   - bioconda

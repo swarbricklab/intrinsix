@@ -1,4 +1,4 @@
-# The pam50 Dockerfile only needs containers/pam50-env.yaml and pam50perou/.
+# The intrinsix Dockerfile only needs containers/intrinsix-env.yaml and the package files.
 # Keep the build context small.
 .git
 .github

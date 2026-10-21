@@ -1,14 +1,14 @@
-citHeader("To cite the pam50 package and the underlying method:")
+citHeader("To cite the intrinsix package and the underlying method:")
 
 bibentry(
   bibtype = "Manual",
-  title   = "pam50: PAM50 intrinsic subtyping (Perou Lab centroids) with Zhao4 normalisation",
+  title   = "intrinsix: PAM50 intrinsic subtyping (Perou Lab centroids) with Zhao4 normalisation",
   author  = c(person("Alec", "Lobanov"),
               person("Charles M.", "Perou"),
               person("Swarbrick Lab")),
   year    = "2026",
   note    = "R package version 0.1.0",
-  url     = "https://github.com/swarbricklab/pam50"
+  url     = "https://github.com/swarbricklab/intrinsix"
 )
 
 bibentry(

@@ -2,7 +2,7 @@
 % Please edit documentation in R/cli.R
 \name{cli}
 \alias{cli}
-\title{pam50 command-line entry point}
+\title{intrinsix command-line entry point}
 \usage{
 cli(args = commandArgs(trailingOnly = TRUE))
 }
@@ -18,5 +18,5 @@ Dispatches \code{run} / \code{add} / \code{classify} / \code{zhao} / \code{clust
 corresponding package functions. \code{run} executes the whole pipeline from a YAML
 config (\code{\link[=pam50_run]{pam50_run()}}); \code{add} does incremental calling of new samples against a
 fixed reference (\code{\link[=pam50_add_samples]{pam50_add_samples()}}). Both are the commands DVC stages invoke.
-Also callable directly: \code{pam50::cli(c("run", "--config", "config.yaml"))}.
+Also callable directly: \code{intrinsix::cli(c("run", "--config", "config.yaml"))}.
 }

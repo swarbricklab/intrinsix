@@ -1,6 +1,6 @@
 cff-version: 1.2.0
-message: "If you use this workflow, please cite it and the underlying PAM50 method."
-title: "pam50: a Snakemake workflow for PAM50 intrinsic molecular subtyping"
+message: "If you use this package, please cite it and the underlying PAM50 method."
+title: "intrinsix: an R package for PAM50 intrinsic molecular subtyping"
 type: software
 authors:
   - family-names: Lobanov
@@ -11,7 +11,7 @@ authors:
     affiliation: "Perou Lab, UNC Lineberger Comprehensive Cancer Center"
   - name: "Swarbrick Lab, Garvan Institute of Medical Research"
 license: MIT
-repository-code: "https://github.com/swarbricklab/pam50"
+repository-code: "https://github.com/swarbricklab/intrinsix"
 references:
   - type: article
     title: "Supervised risk predictor of breast cancer based on intrinsic subtypes"

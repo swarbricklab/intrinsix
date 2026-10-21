@@ -1,11 +1,11 @@
-# pam50
+# intrinsix
 
-[![CI](https://github.com/swarbricklab/pam50/actions/workflows/ci.yml/badge.svg)](https://github.com/swarbricklab/pam50/actions/workflows/ci.yml)
+[![CI](https://github.com/swarbricklab/intrinsix/actions/workflows/ci.yml/badge.svg)](https://github.com/swarbricklab/intrinsix/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 PAM50 intrinsic molecular subtyping of breast-cancer expression data — an **R
-package** (`pam50`) for interactive / scripted use, with a config-driven
-`pam50 run` pipeline that plugs into a DVC super-pipeline.
+package** (`intrinsix`) for interactive / scripted use, with a config-driven
+`intrinsix run` pipeline that plugs into a DVC super-pipeline.
 
 It packages the exact Perou Lab PAM50 classifier (published centroids, Spearman
 rank correlation) with optional Zhao4 subtype-specific normalisation, ROR-S/ROR-P
@@ -40,8 +40,8 @@ By default PAM50 is called on **all samples**; set `filter.column` to restrict
 
 ```r
 # install.packages("remotes")
-remotes::install_github("swarbricklab/pam50")
-library(pam50)
+remotes::install_github("swarbricklab/intrinsix")
+library(intrinsix)
 
 res   <- pam50_subtype(expr, samples = meta, subtype_col = "clinical_subtype")
 res   <- pam50_subtype(sce, layer = "log2_uqn")      # SummarizedExperiment / SCE
@@ -54,23 +54,23 @@ Reference data is bundled: `pam50_centroids()`, `pam50_annotation()`,
 
 ## Use from the command line
 
-The same functions, via the `pam50` CLI (installed with the package; available as
-`pam50` inside the container, or `Rscript -e 'pam50::cli()' --args ...`):
+The same functions, via the `intrinsix` CLI (installed with the package; available as
+`intrinsix` inside the container, or `Rscript -e 'intrinsix::cli()' --args ...`):
 
 ```bash
-pam50 classify --expr expr.tsv --out scores.tsv [--map-symbols]
-pam50 zhao     --expr expr.tsv --samples samples.tsv --subtype-col clinical_subtype --out zhao.tsv
-pam50 cluster  --expr-medctr intrinsic_medctr.tsv --outdir out/ --out-claudin claudin_low.txt
+intrinsix classify --expr expr.tsv --out scores.tsv [--map-symbols]
+intrinsix zhao     --expr expr.tsv --samples samples.tsv --subtype-col clinical_subtype --out zhao.tsv
+intrinsix cluster  --expr-medctr intrinsic_medctr.tsv --outdir out/ --out-claudin claudin_low.txt
 ```
 
 ## Run the whole pipeline (config-driven)
 
-`pam50 run` reads a config (filter/dedup → subtype → optional clustering) and
+`intrinsix run` reads a config (filter/dedup → subtype → optional clustering) and
 writes the outputs — the command a DVC stage invokes. A template config ships with
-the package (`system.file("extdata", "config.example.yaml", package = "pam50")`):
+the package (`system.file("extdata", "config.example.yaml", package = "intrinsix")`):
 
 ```bash
-pam50 run --config config.yaml           # or: Rscript -e 'pam50::pam50_run("config.yaml")'
+intrinsix run --config config.yaml           # or: Rscript -e 'intrinsix::pam50_run("config.yaml")'
 ```
 
 ### Running environments
@@ -80,19 +80,19 @@ required**:
 
 | Context | Environment | Invocation |
 |---|---|---|
-| Laptop / interactive | native install (`remotes` + `BiocManager`) | `pam50 run --config config.yaml` |
-| Reproducible, any OS | **conda** (`environment.yml`) | `conda run -n pam50 pam50 run --config config.yaml` |
-| HPC, locked-down | singularity image | `module load singularity && singularity exec pam50.sif pam50 run --config config.yaml` |
+| Laptop / interactive | native install (`remotes` + `BiocManager`) | `intrinsix run --config config.yaml` |
+| Reproducible, any OS | **conda** (`environment.yml`) | `conda run -n intrinsix intrinsix run --config config.yaml` |
+| HPC, locked-down | singularity image | `module load singularity && singularity exec intrinsix.sif intrinsix run --config config.yaml` |
 
 ```bash
 # conda env (portable default)
-conda env create -f environment.yml && conda activate pam50
+conda env create -f environment.yml && conda activate intrinsix
 R -e 'remotes::install_local(".")'
 ```
 
 ### DVC integration
 
-Each parent DVC pipeline keeps a `pam50` stage whose `cmd` is one of the above —
+Each parent DVC pipeline keeps a `intrinsix` stage whose `cmd` is one of the above —
 DVC does the stage-level caching; no second workflow engine.
 
 ## Layout
@@ -100,12 +100,12 @@ DVC does the stage-level caching; no second workflow engine.
 The repo root **is** the R package.
 
 ```
-DESCRIPTION, NAMESPACE, R/, inst/   the pam50 R package (algorithm, data, CLI, runner)
+DESCRIPTION, NAMESPACE, R/, inst/   the intrinsix R package (algorithm, data, CLI, runner)
 tests/                              package tests (testthat)
 vignettes/                          'Getting started' vignette
 containers/                         Dockerfile + env for the optional HPC image
 environment.yml                     conda env (portable default)
-inst/extdata/config.example.yaml    config template for `pam50 run`
+inst/extdata/config.example.yaml    config template for `intrinsix run`
 vendor/                             unmodified upstream snapshots (provenance)
 ```
 

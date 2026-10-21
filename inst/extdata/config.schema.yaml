@@ -70,12 +70,4 @@ properties:
       output_dir:
         type: string
     required: [output_dir]
-  containers:
-    type: object
-    properties:
-      pam50:
-        type: string
-      python:
-        type: string
-    required: [pam50]
-required: [inputs, filter, zhao_normalization, classifier, intrinsic_clustering, outs, containers]
+required: [inputs, filter, zhao_normalization, classifier, intrinsic_clustering, outs]

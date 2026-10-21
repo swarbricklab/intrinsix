@@ -1,15 +1,16 @@
 # PAM50 workflow — design
 
-Status: **implemented + verified**. Algorithm ported into `pam50perou` (classifier,
+Status: **implemented + verified**. Algorithm ported into `intrinsix` (classifier,
 Zhao4, intrinsic clustering, claudin-low), rule wrappers written, container built
-(`ghcr.io/swarbricklab/pam50`), CI + golden tests in place, and a `pam50` CLI.
+(`ghcr.io/swarbricklab/intrinsix`), CI + golden tests in place, and a `intrinsix` CLI.
 Verified byte-identical to the production bcarc_wts pipeline at unit, golden, and
 full end-to-end (containerised, 225 samples) levels. Remaining: switch the two DVC
 parents over; confirm the upstream perou-lab licence before going public.
 
-A standalone, portable Snakemake workflow for PAM50 intrinsic molecular
-subtyping of breast-cancer expression data, extracted from the duplicated
-`modules/PAM50/` stages in `bcarc_wts` and `brca_mega_atlas-data`.
+An R package (`intrinsix`) for PAM50 intrinsic molecular subtyping of
+breast-cancer expression data, with a config-driven `intrinsix run` pipeline.
+Extracted from the duplicated `modules/PAM50/` stages in `bcarc_wts` and
+`brca_mega_atlas-data`.
 
 ## Why this exists
 
@@ -21,7 +22,7 @@ extraction fixes:
    git submodules and `source()`d by path, relying on global-variable side
    effects. In `brca_mega_atlas-data` the submodules weren't even checked out, so
    the stage was silently broken. Here the algorithm becomes an **installed R
-   package** (`pam50perou`) with reference data bundled as `inst/extdata`.
+   package** (`intrinsix`) with reference data bundled as `inst/extdata`.
 3. **Hidden cross-repo input coupling** — eligibility (`is_pam50_eligible`) and
    `clinical_subtype` came from the `Swarbricklab/metadata` repo via `dt`. Those
    are now **declared inputs**, not reached across repos.
@@ -32,19 +33,19 @@ the calls — that is a separate, results-changing (goal-2) decision.
 
 ## Architecture
 
-The repo root **is** the R package `pam50`. The pipeline is a package function,
-`pam50_run()`, exposed as `pam50 run --config config.yaml` — not a separate
+The repo root **is** the R package `intrinsix`. The pipeline is a package function,
+`pam50_run()`, exposed as `intrinsix run --config config.yaml` — not a separate
 workflow engine. (A Snakemake workflow existed earlier; once `pam50_subtype()`
 fused the steps into one atomic call, Snakemake's value — per-step env dispatch,
 DAG scheduling, incremental caching — collapsed, so it was retired in favour of
-`pam50 run` + DVC-level caching.)
+`intrinsix run` + DVC-level caching.)
 
 ```
-DESCRIPTION, NAMESPACE      the pam50 R package manifest (at repo root)
+DESCRIPTION, NAMESPACE      the intrinsix R package manifest (at repo root)
 R/                          exported API (below) + CLI + pam50_run()
 inst/extdata/               centroids, annotation, calibration medians, training
                             set, SIGMA, intrinsic gene list, config.{example,schema}
-inst/exec/pam50             the `pam50` CLI executable (run/classify/zhao/cluster)
+inst/exec/intrinsix             the `intrinsix` CLI executable (run/classify/zhao/cluster)
 tests/                      testthat (unit + golden)
 vignettes/                  'Getting started'
 environment.yml             conda env (portable default)
@@ -52,12 +53,10 @@ containers/                 Dockerfile + env (optional HPC image)
 vendor/                     UNMODIFIED upstream snapshots (provenance only)
 ```
 
-Two containers (mixing Py/R is fine):
-
-- `ghcr.io/swarbricklab/pam50` — R + `pam50perou` + ComplexHeatmap/ctc/impute.
-  Runs every core step. The workflow is **R-only on the TSV entry path**.
-- an existing GHCR Python/anndata image — used *only* by the optional `h5ad`
-  input adapter, for users who start from AnnData rather than a TSV.
+One container: `ghcr.io/swarbricklab/intrinsix` — R + the `intrinsix` package +
+ComplexHeatmap/ctc/impute + SummarizedExperiment/anndataR/rhdf5. Pure R end to
+end (h5ad is read natively via `anndataR`, no Python). The conda `environment.yml`
+is the portable, no-singularity equivalent.
 
 ## Input contract
 
@@ -76,9 +75,8 @@ are:
 - `samples` — one row per sample; an ID column matching the expression columns,
   plus any columns used for filtering / subtype grouping / passthrough metadata.
 
-Users who have an `.h5ad` can use the optional adapter rule
-(`h5ad_to_expression`, Python container) to emit `expression`/`samples` first;
-this is where the parent repos' preprocessing would plug in.
+A parent repo can feed its `gene_counts.h5ad` directly (via the native `anndataR`
+reader) — no separate export step.
 
 ### Generalised sample filter (new vs. the hard-coded eligibility flag)
 
@@ -129,10 +127,10 @@ intrinsic_clustering:
 ## Exported package API (target)
 
 ```r
-pam50::pam50_annotation()      # bundled reference-data accessors
-pam50::pam50_centroids()
-pam50::sigma_table()
-pam50::intrinsic_genes()
+intrinsix::pam50_annotation()      # bundled reference-data accessors
+intrinsix::pam50_centroids()
+intrinsix::sigma_table()
+intrinsix::intrinsic_genes()
 
 map_to_pam50(expr, annotation)                 # symbol -> pcrID, subset 50, dedup
 zhao_center(expr, subtypes, sigma)             # Zhao4 quantile centering
@@ -155,7 +153,7 @@ That is the gate for retiring the old `modules/PAM50/`.
 
 ## Consumption by the parent DVC repos
 
-Each parent keeps a single `pam50` DVC stage whose `cmd` runs `pam50 run --config
+Each parent keeps a single `intrinsix` DVC stage whose `cmd` runs `intrinsix run --config
 config.yaml` (in a conda env — the portable default — or the singularity image on
 locked-down HPC). The parent's preprocessing emits `expression.tsv` +
 `samples.tsv`; DVC tracks deps/outs and does the stage-level caching. No second
@@ -170,11 +168,10 @@ workflow engine.
 - **Public test data.** Need a small, redistributable expression matrix with
   known PAM50 calls for the acceptance test + CI (candidate: a public GEO/TCGA
   subset, or the upstream `PAM50_example/sampleInputFile_200subjects.txt`).
-- **Package home.** Resolved: one repo serves as both the `pam50` R package (at
-  the root) and the Snakemake workflow (alongside, `.Rbuildignore`d). The package
-  and its rule wrappers are tightly coupled, so a monorepo keeps changes atomic.
-  Split into its own repo only if a second, independent consumer needs the package
-  without the workflow — a trivial move from the root.
+- **Package home.** Resolved: the repo *is* the `intrinsix` R package (root-level),
+  and the pipeline is the package function `pam50_run()` exposed as `intrinsix run`
+  — no separate workflow engine. (An earlier Snakemake workflow was retired once
+  `pam50_subtype()` fused the steps into one call.)
 
 ## Attribution
 

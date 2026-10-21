@@ -8,7 +8,7 @@ logs/
 .Rhistory
 .RData
 *.Rcheck/
-pam50perou*.tar.gz
+intrinsix*.tar.gz
 
 # Python
 __pycache__/
