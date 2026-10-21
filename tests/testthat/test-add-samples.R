@@ -40,6 +40,46 @@ test_that("reference calls stay fixed and new samples are recalled singly", {
   }
 })
 
+test_that("claudin_low = TRUE recalls CLOW incrementally with reference fixed", {
+  pm_genes <- rownames(pam50_centroids())
+  intr <- intrinsic_genes()$Name
+  intr_sub <- unique(c("CLDN3", "CLDN4", "CLDN7",
+                       setdiff(intr, c("CLDN3", "CLDN4", "CLDN7"))[1:22]))
+  samples <- paste0("S", 1:10)
+  clow <- c("S1", "S2", "S3")
+  set.seed(11)
+  pm <- matrix(round(rnorm(length(pm_genes) * 10), 3), length(pm_genes), 10,
+               dimnames = list(pm_genes, samples))
+  im <- matrix(round(rnorm(length(intr_sub) * 10, 0, 0.5), 3), length(intr_sub), 10,
+               dimnames = list(intr_sub, samples))
+  for (g in c("CLDN3", "CLDN4", "CLDN7")) {
+    im[g, ] <- ifelse(samples %in% clow, -2, 1) + rnorm(10, 0, 0.02)  # correlated low block
+  }
+  expr <- rbind(pm, im[!rownames(im) %in% rownames(pm), , drop = FALSE])
+  sm <- data.frame(sample = samples,
+                   clinical_subtype = rep(c("ERpos_HER2neg", "ERneg_HER2neg"), 5),
+                   stringsAsFactors = FALSE)
+
+  ref_ids <- paste0("S", 1:7); new_ids <- paste0("S", 8:10)
+  out <- suppressWarnings(pam50_add_samples(
+    expr[, ref_ids], sm[sm$sample %in% ref_ids, ],
+    expr[, new_ids], sm[sm$sample %in% new_ids, ],
+    subtype_col = "clinical_subtype", id_col = "sample",
+    map_symbols = FALSE, claudin_low = TRUE))
+
+  expect_equal(nrow(out), 10L)
+  expect_true("Call_CLOW" %in% colnames(out))
+  expect_equal(out$added, c(rep(FALSE, 7), rep(TRUE, 3)))
+
+  # reference CLOW assignments unchanged vs a reference-only clustered run
+  ref_only <- suppressWarnings(pam50_subtype(
+    expr[, ref_ids], samples = sm[sm$sample %in% ref_ids, ],
+    subtype_col = "clinical_subtype", id_col = "sample",
+    map_symbols = FALSE, cluster = TRUE))
+  expect_identical(as.character(out[ref_ids, "Call_CLOW"]),
+                   as.character(ref_only$calls[ref_ids, "Call_CLOW"]))
+})
+
 test_that("pam50_add_samples rejects new/reference id collisions", {
   d <- .load_syn()
   expect_error(

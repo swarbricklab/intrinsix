@@ -15,7 +15,8 @@ pam50_add_samples(
   calibration = if (zhao) -1 else NA,
   collapse = "mean",
   id_col = "sample_id",
-  map_symbols = TRUE
+  map_symbols = TRUE,
+  claudin_low = FALSE
 )
 }
 \arguments{
@@ -36,6 +37,9 @@ with the same settings.}
 
 \item{subtype_col, zhao, calibration, collapse, id_col, map_symbols}{Passed to
 \code{\link[=pam50_subtype]{pam50_subtype()}}; the defaults match it (Zhao on when \code{subtype_col} is given).}
+
+\item{claudin_low}{Logical; also recall claudin-low incrementally (adds a
+\code{Call_CLOW} column). Slow (a clustering per new sample). Default \code{FALSE}.}
 }
 \value{
 A data frame of calls for the full cohort: the reference calls
@@ -50,9 +54,12 @@ adding samples in a single batch can shift prior borderline calls, so each new
 sample is recalled individually against the stable reference.
 }
 \details{
-Scope: this returns PAM50 subtype calls + scores. Intrinsic clustering /
-claudin-low are whole-cohort operations and are \strong{not} done incrementally here;
-recompute them on the final cohort with \code{\link[=pam50_subtype]{pam50_subtype()}} if needed.
+By default this returns PAM50 subtype calls + scores. Set \code{claudin_low = TRUE}
+to also recall claudin-low one sample at a time (adds a \code{Call_CLOW} column) —
+claudin-low is whole-cohort clustering and therefore cohort-dependent too, so
+prior CLOW assignments are likewise held fixed. This is much slower (a full
+intrinsic clustering per new sample) and requires \code{new_expr}/\code{reference_expr}
+to contain the intrinsic genes; off by default.
 }
 \seealso{
 \code{\link[=pam50_subtype]{pam50_subtype()}}

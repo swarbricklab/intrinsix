@@ -13,9 +13,12 @@
 #' adding samples in a single batch can shift prior borderline calls, so each new
 #' sample is recalled individually against the stable reference.
 #'
-#' Scope: this returns PAM50 subtype calls + scores. Intrinsic clustering /
-#' claudin-low are whole-cohort operations and are **not** done incrementally here;
-#' recompute them on the final cohort with [pam50_subtype()] if needed.
+#' By default this returns PAM50 subtype calls + scores. Set `claudin_low = TRUE`
+#' to also recall claudin-low one sample at a time (adds a `Call_CLOW` column) —
+#' claudin-low is whole-cohort clustering and therefore cohort-dependent too, so
+#' prior CLOW assignments are likewise held fixed. This is much slower (a full
+#' intrinsic clustering per new sample) and requires `new_expr`/`reference_expr`
+#' to contain the intrinsic genes; off by default.
 #'
 #' @param reference_expr Reference expression matrix (genes x samples), columns =
 #'   the already-called samples.
@@ -27,6 +30,8 @@
 #' @param reference_calls Optional pre-computed calls for the reference cohort (a
 #'   data frame as returned in `pam50_subtype()$calls`). If `NULL`, computed once
 #'   with the same settings.
+#' @param claudin_low Logical; also recall claudin-low incrementally (adds a
+#'   `Call_CLOW` column). Slow (a clustering per new sample). Default `FALSE`.
 #' @param subtype_col,zhao,calibration,collapse,id_col,map_symbols Passed to
 #'   [pam50_subtype()]; the defaults match it (Zhao on when `subtype_col` is given).
 #' @return A data frame of calls for the full cohort: the reference calls
@@ -40,7 +45,7 @@ pam50_add_samples <- function(reference_expr, reference_samples,
                               zhao = !is.null(subtype_col),
                               calibration = if (zhao) -1 else NA,
                               collapse = "mean", id_col = "sample_id",
-                              map_symbols = TRUE) {
+                              map_symbols = TRUE, claudin_low = FALSE) {
   reference_expr <- as.matrix(reference_expr)
   new_expr <- as.matrix(new_expr)
 
@@ -64,7 +69,7 @@ pam50_add_samples <- function(reference_expr, reference_samples,
   cols <- intersect(colnames(reference_samples), colnames(new_samples))
 
   sub_args <- list(subtype_col = subtype_col, zhao = zhao, calibration = calibration,
-                   collapse = collapse, cluster = FALSE, id_col = id_col,
+                   collapse = collapse, cluster = claudin_low, id_col = id_col,
                    map_symbols = map_symbols)
 
   # Reference calls (kept fixed). Compute once if not supplied.
