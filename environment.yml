@@ -24,4 +24,5 @@ dependencies:
   - bioconductor-impute
   - bioconductor-summarizedexperiment
   - bioconductor-anndatar
+  - bioconductor-rhdf5
   - r-remotes
