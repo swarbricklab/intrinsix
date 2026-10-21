@@ -60,10 +60,24 @@ pam50_run <- function(config) {
   .validate_run_config(cfg)
 
   id_col <- cfg$inputs$sample_id_column
-  expr <- as.matrix(utils::read.table(cfg$inputs$expression, sep = "\t",
-                                      header = TRUE, row.names = 1, check.names = FALSE))
-  samples <- utils::read.table(cfg$inputs$samples, sep = "\t", header = TRUE,
-                               check.names = FALSE, stringsAsFactors = FALSE)
+  expr_in <- cfg$inputs$expression
+  samples_in <- if (!is.null(cfg$inputs$samples)) {
+    utils::read.table(cfg$inputs$samples, sep = "\t", header = TRUE,
+                      check.names = FALSE, stringsAsFactors = FALSE)
+  } else NULL
+  # .h5ad -> pass the path; SE/AnnData -> rare in a config; else read the TSV matrix.
+  object <- if (grepl("\\.h5ad$", expr_in, ignore.case = TRUE)) {
+    expr_in
+  } else {
+    as.matrix(utils::read.table(expr_in, sep = "\t", header = TRUE,
+                                row.names = 1, check.names = FALSE))
+  }
+  resolved <- .resolve_input(object, samples_in, cfg$inputs$layer, id_col)
+  expr <- resolved$expr
+  samples <- resolved$samples
+  if (is.null(samples)) {
+    stop("No sample sheet: set inputs$samples, or use an annotated input (SE/h5ad).", call. = FALSE)
+  }
   rownames(samples) <- samples[[id_col]]
 
   samples <- .apply_filter(samples, cfg)

@@ -20,11 +20,15 @@
 #' intrinsic clustering per new sample) and requires `new_expr`/`reference_expr`
 #' to contain the intrinsic genes; off by default.
 #'
-#' @param reference_expr Reference expression matrix (genes x samples), columns =
-#'   the already-called samples.
+#' @param reference_expr Reference expression (matrix genes x samples, or a
+#'   SummarizedExperiment / AnnData / `.h5ad` path; see [pam50_subtype()]), columns
+#'   = the already-called samples.
 #' @param reference_samples Sample sheet for the reference cohort (an `id_col` and,
 #'   for Zhao, a `subtype_col`).
-#' @param new_expr Expression matrix of the new samples (genes x samples).
+#' @param new_expr Expression of the new samples (same accepted types as
+#'   `reference_expr`).
+#' @param layer For SE/AnnData/h5ad inputs, the assay/layer to use (see
+#'   [pam50_subtype()]).
 #' @param new_samples Sample sheet for the new samples (same columns as
 #'   `reference_samples`).
 #' @param reference_calls Optional pre-computed calls for the reference cohort (a
@@ -45,9 +49,11 @@ pam50_add_samples <- function(reference_expr, reference_samples,
                               zhao = !is.null(subtype_col),
                               calibration = if (zhao) -1 else NA,
                               collapse = "mean", id_col = "sample_id",
-                              map_symbols = TRUE, claudin_low = FALSE) {
-  reference_expr <- as.matrix(reference_expr)
-  new_expr <- as.matrix(new_expr)
+                              map_symbols = TRUE, claudin_low = FALSE, layer = NULL) {
+  ref <- .resolve_input(reference_expr, reference_samples, layer, id_col)
+  reference_expr <- as.matrix(ref$expr); reference_samples <- ref$samples
+  nw <- .resolve_input(new_expr, new_samples, layer, id_col)
+  new_expr <- as.matrix(nw$expr); new_samples <- nw$samples
 
   # Expression columns are the source of truth; align the sheets to them.
   ref_ids <- colnames(reference_expr)

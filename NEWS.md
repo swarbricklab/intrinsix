@@ -1,7 +1,14 @@
 # pam50 0.1.0
 
-First packaged release. The repo is now both an installable R package (`pam50`)
-and a Snakemake workflow.
+First packaged release — an installable R package (`pam50`) with a config-driven
+`pam50 run` pipeline.
+
+## Inputs
+
+* Accepts a matrix, a `SummarizedExperiment` / `SingleCellExperiment`, an
+  `anndataR` `AnnData`, or an `.h5ad` path (via `anndataR`, R >= 4.5); the sample
+  sheet is taken from `colData` / `obs`, and `layer=` picks the assay/layer.
+  `SummarizedExperiment` / `anndataR` are optional (`Suggests`).
 
 ## Algorithm (verified byte-identical to the production bcarc_wts pipeline)
 

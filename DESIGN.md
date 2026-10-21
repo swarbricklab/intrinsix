@@ -61,7 +61,13 @@ Two containers (mixing Py/R is fine):
 
 ## Input contract
 
-The standalone entry point is **two tables** (TSV/CSV):
+The expression can be supplied as a **matrix**, a **SummarizedExperiment /
+SingleCellExperiment**, an **AnnData** (`anndataR`), or a path to an **`.h5ad`**
+file; the input layer (`R/input.R`) normalises any of these to an expression
+matrix + sample sheet (for the annotated objects the sheet comes from
+`colData`/`obs`, and `layer=` picks the assay/layer). `anndataR` (R >= 4.5) and
+`SummarizedExperiment` are optional `Suggests`. For a plain matrix the two tables
+are:
 
 - `expression` — genes × samples. Rows = HGNC gene symbols, columns = sample IDs,
   values = **log2-scale normalised** expression (log2 UQN, log2(TPM+1), …). The

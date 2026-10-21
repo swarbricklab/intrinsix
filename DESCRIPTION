@@ -32,6 +32,8 @@ Suggests:
     cluster,
     ComplexHeatmap,
     circlize,
+    SummarizedExperiment,
+    anndataR,
     knitr,
     rmarkdown,
     pkgdown,

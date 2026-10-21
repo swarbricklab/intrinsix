@@ -19,14 +19,22 @@ byte-identical to that pipeline at unit, golden, and full end-to-end levels.
 
 ## Input
 
-Two tables (see [`DESIGN.md`](DESIGN.md#input-contract)):
+The expression can be a **matrix**, a **SummarizedExperiment / SingleCellExperiment**,
+an **AnnData**, or a path to an **`.h5ad`** file (see [`DESIGN.md`](DESIGN.md#input-contract)).
+For a plain matrix you also supply a sample sheet; for the annotated objects the
+sample sheet is taken from them (`colData` / `obs`):
 
-- **expression** — genes × samples, HGNC symbols, log2-scale normalised values.
+- **expression** — genes × samples, HGNC symbols, log2-scale normalised values
+  (pick the layer/assay with `layer =`, e.g. `"log2_uqn"`).
 - **samples** — one row per sample; an ID column plus any columns used for
   filtering, subtype grouping, or passthrough metadata.
 
 By default PAM50 is called on **all samples**; set `filter.column` to restrict
 (e.g. to an eligibility flag).
+
+> `.h5ad` support needs the `anndataR` package (R ≥ 4.5); `SummarizedExperiment`
+> input needs that package. Both are optional (`Suggests`) — the matrix path needs
+> neither. The conda `environment.yml` and container include them.
 
 ## Use as an R package
 
@@ -35,8 +43,10 @@ By default PAM50 is called on **all samples**; set `filter.column` to restrict
 remotes::install_github("swarbricklab/pam50")
 library(pam50)
 
-calls <- predict_pam50(expr)            # expr: genes x samples, PAM50 pcrID rows
-z     <- zhao_center(expr, subtypes)    # Zhao4 subtype-specific centering
+res   <- pam50_subtype(expr, samples = meta, subtype_col = "clinical_subtype")
+res   <- pam50_subtype(sce, layer = "log2_uqn")      # SummarizedExperiment / SCE
+res   <- pam50_subtype("cohort.h5ad", layer = "log2_uqn")   # .h5ad path
+calls <- predict_pam50(expr)            # low-level: expr = PAM50 pcrID rows
 ```
 
 Reference data is bundled: `pam50_centroids()`, `pam50_annotation()`,

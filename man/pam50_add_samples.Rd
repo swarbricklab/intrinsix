@@ -16,17 +16,20 @@ pam50_add_samples(
   collapse = "mean",
   id_col = "sample_id",
   map_symbols = TRUE,
-  claudin_low = FALSE
+  claudin_low = FALSE,
+  layer = NULL
 )
 }
 \arguments{
-\item{reference_expr}{Reference expression matrix (genes x samples), columns =
-the already-called samples.}
+\item{reference_expr}{Reference expression (matrix genes x samples, or a
+SummarizedExperiment / AnnData / \code{.h5ad} path; see \code{\link[=pam50_subtype]{pam50_subtype()}}), columns
+= the already-called samples.}
 
 \item{reference_samples}{Sample sheet for the reference cohort (an \code{id_col} and,
 for Zhao, a \code{subtype_col}).}
 
-\item{new_expr}{Expression matrix of the new samples (genes x samples).}
+\item{new_expr}{Expression of the new samples (same accepted types as
+\code{reference_expr}).}
 
 \item{new_samples}{Sample sheet for the new samples (same columns as
 \code{reference_samples}).}
@@ -40,6 +43,9 @@ with the same settings.}
 
 \item{claudin_low}{Logical; also recall claudin-low incrementally (adds a
 \code{Call_CLOW} column). Slow (a clustering per new sample). Default \code{FALSE}.}
+
+\item{layer}{For SE/AnnData/h5ad inputs, the assay/layer to use (see
+\code{\link[=pam50_subtype]{pam50_subtype()}}).}
 }
 \value{
 A data frame of calls for the full cohort: the reference calls

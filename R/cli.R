@@ -75,22 +75,25 @@
   .require_opts(opt, "config", "add")
   cfg <- yaml::read_yaml(opt$config)
   id_col <- cfg$sample_id_column %||% "sample_id"
-  read_sheet <- function(p) utils::read.table(p, sep = "\t", header = TRUE,
-                                              check.names = FALSE, stringsAsFactors = FALSE)
+  # expression: pass an .h5ad path through (resolved downstream), else read the TSV.
+  read_expr <- function(p) if (grepl("\\.h5ad$", p, ignore.case = TRUE)) p else .read_matrix(p)
+  read_sheet <- function(p) if (is.null(p)) NULL else {
+    utils::read.table(p, sep = "\t", header = TRUE, check.names = FALSE, stringsAsFactors = FALSE)
+  }
   ref_calls <- NULL
   if (!is.null(cfg$reference$calls)) {
     ref_calls <- utils::read.table(cfg$reference$calls, sep = "\t", header = TRUE,
                                    row.names = 1, check.names = FALSE)
   }
   out <- pam50_add_samples(
-    .read_matrix(cfg$reference$expression), read_sheet(cfg$reference$samples),
-    .read_matrix(cfg$new$expression), read_sheet(cfg$new$samples),
+    read_expr(cfg$reference$expression), read_sheet(cfg$reference$samples),
+    read_expr(cfg$new$expression), read_sheet(cfg$new$samples),
     reference_calls = ref_calls, subtype_col = cfg$subtype_column,
     zhao = cfg$zhao %||% !is.null(cfg$subtype_column),
     calibration = cfg$classifier$calibration %||% -1,
     collapse = cfg$classifier$collapse_method %||% "mean",
     id_col = id_col, map_symbols = cfg$map_symbols %||% TRUE,
-    claudin_low = isTRUE(cfg$claudin_low)
+    claudin_low = isTRUE(cfg$claudin_low), layer = cfg$layer
   )
   outpath <- cfg$outs$output
   dir.create(dirname(outpath), recursive = TRUE, showWarnings = FALSE)

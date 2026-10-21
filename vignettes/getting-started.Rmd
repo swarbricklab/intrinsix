@@ -74,6 +74,18 @@ res <- pam50_subtype(
 )
 ```
 
+## Other input types
+
+`pam50_subtype()` (and `pam50_run()` / `pam50_add_samples()`) also accept a
+`SummarizedExperiment` / `SingleCellExperiment`, an `anndataR` `AnnData`, or a path
+to an `.h5ad` file — the sample sheet is taken from `colData` / `obs`, and `layer=`
+picks the assay/layer:
+
+```{r, eval = FALSE}
+pam50_subtype(sce, layer = "log2_uqn")             # SummarizedExperiment / SCE
+pam50_subtype("cohort.h5ad", layer = "log2_uqn")   # .h5ad (needs anndataR, R >= 4.5)
+```
+
 ## Reference data and the command line
 
 Bundled reference data is available directly: `pam50_centroids()`,

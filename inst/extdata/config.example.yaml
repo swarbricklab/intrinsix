@@ -6,10 +6,12 @@
 
 # -- Inputs -- #
 inputs:
-  # Expression matrix: genes (rows, HGNC symbols) x samples (columns),
-  # log2-scale normalised values (e.g. log2 UQN, log2(TPM+1)).
+  # Expression: a TSV matrix (genes x samples, HGNC symbols, log2-scale), OR a
+  # path to an .h5ad file (needs anndataR, R >= 4.5).
   expression: "expression.tsv"
-  # Sample sheet: one row per sample.
+  # For .h5ad / SummarizedExperiment inputs, which layer/assay to use:
+  # layer: "log2_uqn"
+  # Sample sheet (TSV). Optional for .h5ad input (taken from obs if omitted).
   samples: "samples.tsv"
   # Column in `samples` holding the sample IDs (must match expression columns).
   sample_id_column: "sample_id"

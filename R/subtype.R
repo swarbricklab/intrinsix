@@ -9,14 +9,21 @@
 #' object you can `print()`, `summary()`, `plot()`, or coerce with
 #' `as.data.frame()`.
 #'
-#' @param expr Numeric matrix, genes x samples. Row names are HGNC gene symbols
-#'   (set `map_symbols = FALSE` if they are already the classifier's pcrID). For
-#'   `cluster = TRUE`, `expr` must contain the intrinsic genes (i.e. be a full
-#'   expression matrix, not pre-subset to the 50 PAM50 genes).
+#' @param object The expression input, as any of: a numeric matrix (genes x
+#'   samples); a [SummarizedExperiment::SummarizedExperiment] /
+#'   `SingleCellExperiment` (use `layer` to pick the assay); an `anndataR`
+#'   `AnnData`; or a path to an `.h5ad` file (needs the `anndataR` package, R >=
+#'   4.5). For objects carrying sample annotations (SE/AnnData/h5ad), the sample
+#'   sheet is taken from them unless `samples` is given. Row names must be HGNC
+#'   gene symbols (set `map_symbols = FALSE` if already pcrID). For `cluster =
+#'   TRUE` the input must contain the intrinsic genes (a full matrix).
 #' @param samples Optional data frame, one row per sample, carrying the clinical
-#'   subtype column used for Zhao normalisation.
+#'   subtype column used for Zhao normalisation. Overrides annotations from an
+#'   SE/AnnData/h5ad input.
 #' @param subtype_col Name of the clinical (ER x HER2) subtype column in
 #'   `samples`. Required when `zhao = TRUE`.
+#' @param layer For SE/AnnData/h5ad inputs, the assay/layer to use (e.g.
+#'   `"log2_uqn"`); defaults to the first assay / `X`.
 #' @param zhao Logical; apply Zhao4 normalisation. Defaults to `TRUE` when
 #'   `subtype_col` is supplied, else `FALSE`.
 #' @param map_symbols Logical; map HGNC symbols to pcrID and subset to the 50
@@ -38,12 +45,14 @@
 #' plot(res)
 #' }
 #' @export
-pam50_subtype <- function(expr, samples = NULL, subtype_col = NULL,
+pam50_subtype <- function(object, samples = NULL, subtype_col = NULL, layer = NULL,
                           zhao = !is.null(subtype_col), map_symbols = TRUE,
                           calibration = if (zhao) -1 else NA,
                           collapse = "mean", cluster = FALSE,
                           id_col = "sample_id") {
-  expr <- as.matrix(expr)
+  resolved <- .resolve_input(object, samples, layer, id_col)
+  expr <- resolved$expr
+  samples <- resolved$samples
   pam50_expr <- if (map_symbols) map_to_pam50(expr) else expr
 
   used <- pam50_expr

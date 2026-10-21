@@ -5,9 +5,10 @@
 \title{PAM50 subtyping, end to end}
 \usage{
 pam50_subtype(
-  expr,
+  object,
   samples = NULL,
   subtype_col = NULL,
+  layer = NULL,
   zhao = !is.null(subtype_col),
   map_symbols = TRUE,
   calibration = if (zhao) -1 else NA,
@@ -17,16 +18,23 @@ pam50_subtype(
 )
 }
 \arguments{
-\item{expr}{Numeric matrix, genes x samples. Row names are HGNC gene symbols
-(set \code{map_symbols = FALSE} if they are already the classifier's pcrID). For
-\code{cluster = TRUE}, \code{expr} must contain the intrinsic genes (i.e. be a full
-expression matrix, not pre-subset to the 50 PAM50 genes).}
+\item{object}{The expression input, as any of: a numeric matrix (genes x
+samples); a \link[SummarizedExperiment:RangedSummarizedExperiment-class]{SummarizedExperiment::SummarizedExperiment} /
+\code{SingleCellExperiment} (use \code{layer} to pick the assay); an \code{anndataR}
+\code{AnnData}; or a path to an \code{.h5ad} file (needs the \code{anndataR} package, R >=
+4.5). For objects carrying sample annotations (SE/AnnData/h5ad), the sample
+sheet is taken from them unless \code{samples} is given. Row names must be HGNC
+gene symbols (set \code{map_symbols = FALSE} if already pcrID). For \code{cluster = TRUE} the input must contain the intrinsic genes (a full matrix).}
 
 \item{samples}{Optional data frame, one row per sample, carrying the clinical
-subtype column used for Zhao normalisation.}
+subtype column used for Zhao normalisation. Overrides annotations from an
+SE/AnnData/h5ad input.}
 
 \item{subtype_col}{Name of the clinical (ER x HER2) subtype column in
 \code{samples}. Required when \code{zhao = TRUE}.}
+
+\item{layer}{For SE/AnnData/h5ad inputs, the assay/layer to use (e.g.
+\code{"log2_uqn"}); defaults to the first assay / \code{X}.}
 
 \item{zhao}{Logical; apply Zhao4 normalisation. Defaults to \code{TRUE} when
 \code{subtype_col} is supplied, else \code{FALSE}.}

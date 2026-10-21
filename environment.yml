@@ -11,7 +11,7 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - r-base=4.4
+  - r-base=4.5
   - r-yaml
   - r-dplyr
   - r-data.table
@@ -22,4 +22,6 @@ dependencies:
   - bioconductor-complexheatmap
   - bioconductor-ctc
   - bioconductor-impute
+  - bioconductor-summarizedexperiment
+  - bioconductor-anndatar
   - r-remotes
