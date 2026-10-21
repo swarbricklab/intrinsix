@@ -41,6 +41,38 @@ map_to_pam50 <- function(expr, annotation = pam50_annotation()) {
   sub
 }
 
+#' Select the PAM50 genes using precomputed classifier IDs
+#'
+#' The drift-proof alternative to [map_to_pam50()]: instead of re-matching HGNC
+#' symbols (which rename over time, e.g. ORC6L -> ORC6), use a per-gene classifier
+#' ID assigned upstream from a stable identifier (e.g. Ensembl gene IDs). This is
+#' how the source pipeline fed the classifier: an h5ad `var$pam50_symbol` column
+#' holding the `pcrID` for the 50 PAM50 genes (and empty for all others).
+#'
+#' @param expr Numeric matrix, genes x samples (any row names).
+#' @param pam50_ids Character vector, one entry per row of `expr` (same order),
+#'   giving each gene's classifier `pcrID`; empty/`NA` for non-PAM50 genes.
+#' @return Numeric matrix of the PAM50 genes (pcrID row names) x samples. Warns if
+#'   fewer than 50 are present.
+#' @export
+select_pam50_by_id <- function(expr, pam50_ids) {
+  expr <- as.matrix(expr)
+  if (length(pam50_ids) != nrow(expr)) {
+    stop("pam50_ids must have one entry per row of expr.", call. = FALSE)
+  }
+  ids <- as.character(pam50_ids)
+  keep <- !is.na(ids) & nzchar(ids) & !(tolower(ids) %in% c("nan", "na"))
+  sub <- expr[keep, , drop = FALSE]
+  rownames(sub) <- ids[keep]
+  sub <- sub[!duplicated(rownames(sub)), , drop = FALSE]
+  if (nrow(sub) < 50L) {
+    warning(sprintf("select_pam50_by_id: only %d/50 PAM50 genes present.", nrow(sub)),
+            call. = FALSE)
+  }
+  storage.mode(sub) <- "double"
+  sub
+}
+
 #' Median-centre a matrix (row-wise)
 #'
 #' Subtracts each row's median. Used to prepare the intrinsic expression matrix

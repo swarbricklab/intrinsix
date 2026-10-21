@@ -6,7 +6,7 @@
 
 # @noRd
 .resolve_input <- function(object, samples = NULL, layer = NULL, id_col = "sample_id",
-                           gene_col = NULL) {
+                           gene_col = NULL, pam50_id_col = NULL) {
   # .h5ad path -> anndataR AnnData
   if (is.character(object) && length(object) == 1L && grepl("\\.h5ad$", object, ignore.case = TRUE)) {
     if (!requireNamespace("anndataR", quietly = TRUE)) {
@@ -33,11 +33,18 @@
     }
     snames <- rownames(object$obs); if (is.null(snames)) snames <- object$obs_names
     rownames(expr) <- gnames; colnames(expr) <- snames
+    pam50_ids <- NULL
+    if (!is.null(pam50_id_col)) {
+      if (!pam50_id_col %in% colnames(object$var)) {
+        stop(sprintf("pam50_id_col '%s' not in var.", pam50_id_col), call. = FALSE)
+      }
+      pam50_ids <- as.character(object$var[[pam50_id_col]])  # positional, = expr rows
+    }
     if (is.null(samples)) {
       samples <- as.data.frame(object$obs)
       if (!id_col %in% colnames(samples)) samples[[id_col]] <- snames
     }
-    return(list(expr = expr, samples = samples))
+    return(list(expr = expr, samples = samples, pam50_ids = pam50_ids))
   }
 
   # SummarizedExperiment / SingleCellExperiment (assays are genes x samples)
@@ -47,21 +54,28 @@
     }
     expr <- as.matrix(SummarizedExperiment::assay(object, if (is.null(layer)) 1L else layer))
     cd <- as.data.frame(SummarizedExperiment::colData(object))
+    rd <- SummarizedExperiment::rowData(object)
     if (!is.null(gene_col)) {
-      rd <- SummarizedExperiment::rowData(object)
       if (!gene_col %in% colnames(rd)) stop(sprintf("gene_col '%s' not in rowData.", gene_col), call. = FALSE)
       rownames(expr) <- as.character(rd[[gene_col]])
     } else if (is.null(rownames(expr))) {
       rownames(expr) <- rownames(object)
+    }
+    pam50_ids <- NULL
+    if (!is.null(pam50_id_col)) {
+      if (!pam50_id_col %in% colnames(rd)) {
+        stop(sprintf("pam50_id_col '%s' not in rowData.", pam50_id_col), call. = FALSE)
+      }
+      pam50_ids <- as.character(rd[[pam50_id_col]])  # positional, = expr rows
     }
     if (is.null(colnames(expr))) colnames(expr) <- rownames(cd)
     if (is.null(samples)) {
       samples <- cd
       if (!id_col %in% colnames(samples)) samples[[id_col]] <- rownames(cd)
     }
-    return(list(expr = expr, samples = samples))
+    return(list(expr = expr, samples = samples, pam50_ids = pam50_ids))
   }
 
   # plain matrix / data.frame (samples supplied separately)
-  list(expr = as.matrix(object), samples = samples)
+  list(expr = as.matrix(object), samples = samples, pam50_ids = NULL)
 }

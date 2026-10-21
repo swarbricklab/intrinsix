@@ -11,6 +11,13 @@ inputs:
   expression: "expression.tsv"
   # For .h5ad / SummarizedExperiment inputs, which layer/assay to use:
   # layer: "log2_uqn"
+  # For .h5ad / SummarizedExperiment inputs, a var/rowData column of gene symbols
+  # (when the row index is Ensembl IDs):
+  # gene_col: "gene_name"
+  # Drift-proof PAM50 selection: a var/rowData column holding the classifier pcrID
+  # for the 50 PAM50 genes (precomputed upstream from stable Ensembl IDs). When set,
+  # PAM50 genes are selected by these IDs, not by matching HGNC symbols:
+  # pam50_id_col: "pam50_symbol"
   # Sample sheet (TSV). Optional for .h5ad input (taken from obs if omitted).
   samples: "samples.tsv"
   # Column in `samples` holding the sample IDs (must match expression columns).

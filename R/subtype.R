@@ -27,6 +27,15 @@
 #' @param gene_col For SE/AnnData/h5ad inputs, a `var`/`rowData` column holding the
 #'   gene identifiers to use as row names (e.g. `"gene_name"` when the index is
 #'   Ensembl IDs). Defaults to the object's own index.
+#' @param pam50_id_col For SE/AnnData/h5ad inputs, a `var`/`rowData` column holding
+#'   the classifier `pcrID` for the 50 PAM50 genes (empty for others), precomputed
+#'   upstream from a stable identifier such as Ensembl IDs. When supplied, the
+#'   PAM50 genes are selected via these IDs ([select_pam50_by_id()]) instead of by
+#'   matching HGNC symbols — the drift-proof path (avoids symbol renames like
+#'   ORC6L -> ORC6). Overrides `map_symbols` for PAM50 gene selection.
+#' @param pam50_ids Optional character vector of classifier `pcrID`s, one per row
+#'   of a plain-matrix `object` (same order; empty for non-PAM50 rows). The
+#'   matrix-input equivalent of `pam50_id_col`; used internally by [pam50_run()].
 #' @param zhao Logical; apply Zhao4 normalisation. Defaults to `TRUE` when
 #'   `subtype_col` is supplied, else `FALSE`.
 #' @param map_symbols Logical; map HGNC symbols to pcrID and subset to the 50
@@ -49,14 +58,25 @@
 #' }
 #' @export
 pam50_subtype <- function(object, samples = NULL, subtype_col = NULL, layer = NULL,
-                          gene_col = NULL, zhao = !is.null(subtype_col), map_symbols = TRUE,
+                          gene_col = NULL, pam50_id_col = NULL, pam50_ids = NULL,
+                          zhao = !is.null(subtype_col), map_symbols = TRUE,
                           calibration = if (zhao) -1 else NA,
                           collapse = "mean", cluster = FALSE,
                           id_col = "sample_id") {
-  resolved <- .resolve_input(object, samples, layer, id_col, gene_col = gene_col)
+  resolved <- .resolve_input(object, samples, layer, id_col, gene_col = gene_col,
+                             pam50_id_col = pam50_id_col)
   expr <- resolved$expr
   samples <- resolved$samples
-  pam50_expr <- if (map_symbols) map_to_pam50(expr) else expr
+  # Prefer precomputed classifier IDs (from pam50_id_col, or passed explicitly for
+  # a plain-matrix input) — the drift-proof path; else fall back to symbol mapping.
+  ids <- resolved$pam50_ids %||% pam50_ids
+  pam50_expr <- if (!is.null(ids)) {
+    select_pam50_by_id(expr, ids)
+  } else if (map_symbols) {
+    map_to_pam50(expr)
+  } else {
+    expr
+  }
 
   used <- pam50_expr
   if (zhao) {

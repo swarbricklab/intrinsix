@@ -10,6 +10,8 @@ pam50_subtype(
   subtype_col = NULL,
   layer = NULL,
   gene_col = NULL,
+  pam50_id_col = NULL,
+  pam50_ids = NULL,
   zhao = !is.null(subtype_col),
   map_symbols = TRUE,
   calibration = if (zhao) -1 else NA,
@@ -40,6 +42,17 @@ SE/AnnData/h5ad input.}
 \item{gene_col}{For SE/AnnData/h5ad inputs, a \code{var}/\code{rowData} column holding the
 gene identifiers to use as row names (e.g. \code{"gene_name"} when the index is
 Ensembl IDs). Defaults to the object's own index.}
+
+\item{pam50_id_col}{For SE/AnnData/h5ad inputs, a \code{var}/\code{rowData} column holding
+the classifier \code{pcrID} for the 50 PAM50 genes (empty for others), precomputed
+upstream from a stable identifier such as Ensembl IDs. When supplied, the
+PAM50 genes are selected via these IDs (\code{\link[=select_pam50_by_id]{select_pam50_by_id()}}) instead of by
+matching HGNC symbols — the drift-proof path (avoids symbol renames like
+ORC6L -> ORC6). Overrides \code{map_symbols} for PAM50 gene selection.}
+
+\item{pam50_ids}{Optional character vector of classifier \code{pcrID}s, one per row
+of a plain-matrix \code{object} (same order; empty for non-PAM50 rows). The
+matrix-input equivalent of \code{pam50_id_col}; used internally by \code{\link[=pam50_run]{pam50_run()}}.}
 
 \item{zhao}{Logical; apply Zhao4 normalisation. Defaults to \code{TRUE} when
 \code{subtype_col} is supplied, else \code{FALSE}.}

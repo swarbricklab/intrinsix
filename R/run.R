@@ -73,7 +73,8 @@ pam50_run <- function(config) {
                                 row.names = 1, check.names = FALSE))
   }
   resolved <- .resolve_input(object, samples_in, cfg$inputs$layer, id_col,
-                             gene_col = cfg$inputs$gene_col)
+                             gene_col = cfg$inputs$gene_col,
+                             pam50_id_col = cfg$inputs$pam50_id_col)
   expr <- resolved$expr
   samples <- resolved$samples
   if (is.null(samples)) {
@@ -94,7 +95,8 @@ pam50_run <- function(config) {
     zhao = isTRUE(cfg$zhao_normalization$enabled),
     calibration = cfg$classifier$calibration %||% -1,
     collapse = cfg$classifier$collapse_method %||% "mean",
-    cluster = cluster, id_col = id_col, map_symbols = TRUE
+    cluster = cluster, id_col = id_col, map_symbols = TRUE,
+    pam50_ids = resolved$pam50_ids   # drift-proof IDs when inputs$pam50_id_col set
   )
 
   out <- cfg$outs$output_dir

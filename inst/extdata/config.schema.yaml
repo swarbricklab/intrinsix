@@ -14,7 +14,22 @@ properties:
       sample_id_column:
         type: string
         description: Column in `samples` holding sample IDs matching expression columns.
-    required: [expression, samples, sample_id_column]
+      layer:
+        type: string
+        description: For .h5ad/SummarizedExperiment inputs, the layer/assay to use.
+      gene_col:
+        type: string
+        description: >-
+          For .h5ad/SummarizedExperiment inputs, a var/rowData column holding gene
+          symbols to use as row names (e.g. "gene_name" when the index is Ensembl IDs).
+      pam50_id_col:
+        type: string
+        description: >-
+          For .h5ad/SummarizedExperiment inputs, a var/rowData column holding the
+          classifier pcrID for the 50 PAM50 genes (empty otherwise), precomputed
+          upstream from a stable ID (e.g. Ensembl). When set, PAM50 genes are
+          selected via these IDs instead of by matching drifting HGNC symbols.
+    required: [expression, sample_id_column]
   filter:
     type: object
     properties:
