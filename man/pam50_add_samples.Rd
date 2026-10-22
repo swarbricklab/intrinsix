@@ -19,7 +19,8 @@ pam50_add_samples(
   claudin_low = FALSE,
   layer = NULL,
   gene_col = NULL,
-  pam50_id_col = NULL
+  pam50_id_col = NULL,
+  entrez_col = NULL
 )
 }
 \arguments{
@@ -49,10 +50,10 @@ with the same settings.}
 \item{layer}{For SE/AnnData/h5ad inputs, the assay/layer to use (see
 \code{\link[=pam50_subtype]{pam50_subtype()}}).}
 
-\item{gene_col, pam50_id_col}{For SE/AnnData/h5ad inputs, the \code{var}/\code{rowData}
-columns giving the gene symbols and (drift-proof) classifier pcrIDs; see
-\code{\link[=pam50_subtype]{pam50_subtype()}}. When \code{pam50_id_col} is set the PAM50 genes are selected via
-the stable IDs on both cohorts.}
+\item{gene_col, pam50_id_col, entrez_col}{For SE/AnnData/h5ad inputs, the
+\code{var}/\code{rowData} columns giving the gene symbols, the (drift-proof) classifier
+pcrIDs, and/or NCBI Entrez IDs; see \code{\link[=pam50_subtype]{pam50_subtype()}}. When \code{pam50_id_col} or
+\code{entrez_col} is set the PAM50 genes are selected via stable IDs on both cohorts.}
 }
 \value{
 A data frame of calls for the full cohort: the reference calls

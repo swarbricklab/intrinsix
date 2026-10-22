@@ -29,6 +29,13 @@ properties:
           classifier pcrID for the 50 PAM50 genes (empty otherwise), precomputed
           upstream from a stable ID (e.g. Ensembl). When set, PAM50 genes are
           selected via these IDs instead of by matching drifting HGNC symbols.
+      entrez_col:
+        type: string
+        description: >-
+          For .h5ad/SummarizedExperiment inputs, a var/rowData column of NCBI Entrez
+          gene IDs. intrinsix maps these to the classifier pcrID via its bundled
+          annotation (stable, self-contained — needs no precomputed PAM50 columns).
+          Used when pam50_id_col is not set.
     required: [expression, sample_id_column]
   filter:
     type: object

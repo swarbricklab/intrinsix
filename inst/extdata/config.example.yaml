@@ -18,6 +18,10 @@ inputs:
   # for the 50 PAM50 genes (precomputed upstream from stable Ensembl IDs). When set,
   # PAM50 genes are selected by these IDs, not by matching HGNC symbols:
   # pam50_id_col: "pam50_symbol"
+  # Or, fully self-contained + stable: a var/rowData column of NCBI Entrez IDs,
+  # which intrinsix maps to the classifier pcrID via its own bundled annotation
+  # (no precomputed PAM50 columns needed upstream):
+  # entrez_col: "entrez_id"
   # Sample sheet (TSV). Optional for .h5ad input (taken from obs if omitted).
   samples: "samples.tsv"
   # Column in `samples` holding the sample IDs (must match expression columns).

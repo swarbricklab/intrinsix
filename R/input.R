@@ -4,9 +4,19 @@
 # (expression matrix [genes x samples], sample-sheet data.frame) pair. The
 # SummarizedExperiment and anndataR packages are Suggests, loaded only on demand.
 
+# Map a per-row vector of NCBI Entrez gene IDs to the classifier pcrID, using the
+# bundled PAM50 annotation's EntrezGene column. Non-PAM50 rows -> NA. Entrez IDs are
+# a stable key (unlike HGNC symbols), so intrinsix can self-identify its 50 genes
+# without the input carrying a precomputed pcrID column.
+# @noRd
+.pcrid_from_entrez <- function(entrez_ids, annotation = pam50_annotation()) {
+  m <- stats::setNames(as.character(annotation$pcrID), as.character(annotation$EntrezGene))
+  unname(m[as.character(entrez_ids)])
+}
+
 # @noRd
 .resolve_input <- function(object, samples = NULL, layer = NULL, id_col = "sample_id",
-                           gene_col = NULL, pam50_id_col = NULL) {
+                           gene_col = NULL, pam50_id_col = NULL, entrez_col = NULL) {
   # .h5ad path -> anndataR AnnData
   if (is.character(object) && length(object) == 1L && grepl("\\.h5ad$", object, ignore.case = TRUE)) {
     if (!requireNamespace("anndataR", quietly = TRUE)) {
@@ -39,6 +49,11 @@
         stop(sprintf("pam50_id_col '%s' not in var.", pam50_id_col), call. = FALSE)
       }
       pam50_ids <- as.character(object$var[[pam50_id_col]])  # positional, = expr rows
+    } else if (!is.null(entrez_col)) {
+      if (!entrez_col %in% colnames(object$var)) {
+        stop(sprintf("entrez_col '%s' not in var.", entrez_col), call. = FALSE)
+      }
+      pam50_ids <- .pcrid_from_entrez(object$var[[entrez_col]])
     }
     if (is.null(samples)) {
       samples <- as.data.frame(object$obs)
@@ -67,6 +82,11 @@
         stop(sprintf("pam50_id_col '%s' not in rowData.", pam50_id_col), call. = FALSE)
       }
       pam50_ids <- as.character(rd[[pam50_id_col]])  # positional, = expr rows
+    } else if (!is.null(entrez_col)) {
+      if (!entrez_col %in% colnames(rd)) {
+        stop(sprintf("entrez_col '%s' not in rowData.", entrez_col), call. = FALSE)
+      }
+      pam50_ids <- .pcrid_from_entrez(rd[[entrez_col]])
     }
     if (is.null(colnames(expr))) colnames(expr) <- rownames(cd)
     if (is.null(samples)) {

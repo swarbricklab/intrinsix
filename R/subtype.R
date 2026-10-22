@@ -33,6 +33,11 @@
 #'   PAM50 genes are selected via these IDs ([select_pam50_by_id()]) instead of by
 #'   matching HGNC symbols — the drift-proof path (avoids symbol renames like
 #'   ORC6L -> ORC6). Overrides `map_symbols` for PAM50 gene selection.
+#' @param entrez_col For SE/AnnData/h5ad inputs, a `var`/`rowData` column of NCBI
+#'   Entrez gene IDs. intrinsix maps these to the classifier pcrID via its bundled
+#'   annotation's EntrezGene column — a stable, self-contained alternative to
+#'   `pam50_id_col` that needs no precomputed PAM50 columns on the input (used when
+#'   `pam50_id_col` is not given).
 #' @param pam50_ids Optional character vector of classifier `pcrID`s, one per row
 #'   of a plain-matrix `object` (same order; empty for non-PAM50 rows). The
 #'   matrix-input equivalent of `pam50_id_col`; used internally by [pam50_run()].
@@ -58,13 +63,14 @@
 #' }
 #' @export
 pam50_subtype <- function(object, samples = NULL, subtype_col = NULL, layer = NULL,
-                          gene_col = NULL, pam50_id_col = NULL, pam50_ids = NULL,
+                          gene_col = NULL, pam50_id_col = NULL, entrez_col = NULL,
+                          pam50_ids = NULL,
                           zhao = !is.null(subtype_col), map_symbols = TRUE,
                           calibration = if (zhao) -1 else NA,
                           collapse = "mean", cluster = FALSE,
                           id_col = "sample_id") {
   resolved <- .resolve_input(object, samples, layer, id_col, gene_col = gene_col,
-                             pam50_id_col = pam50_id_col)
+                             pam50_id_col = pam50_id_col, entrez_col = entrez_col)
   expr <- resolved$expr
   samples <- resolved$samples
   # Prefer precomputed classifier IDs (from pam50_id_col, or passed explicitly for

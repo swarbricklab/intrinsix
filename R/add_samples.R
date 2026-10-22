@@ -36,10 +36,10 @@
 #'   with the same settings.
 #' @param claudin_low Logical; also recall claudin-low incrementally (adds a
 #'   `Call_CLOW` column). Slow (a clustering per new sample). Default `FALSE`.
-#' @param gene_col,pam50_id_col For SE/AnnData/h5ad inputs, the `var`/`rowData`
-#'   columns giving the gene symbols and (drift-proof) classifier pcrIDs; see
-#'   [pam50_subtype()]. When `pam50_id_col` is set the PAM50 genes are selected via
-#'   the stable IDs on both cohorts.
+#' @param gene_col,pam50_id_col,entrez_col For SE/AnnData/h5ad inputs, the
+#'   `var`/`rowData` columns giving the gene symbols, the (drift-proof) classifier
+#'   pcrIDs, and/or NCBI Entrez IDs; see [pam50_subtype()]. When `pam50_id_col` or
+#'   `entrez_col` is set the PAM50 genes are selected via stable IDs on both cohorts.
 #' @param subtype_col,zhao,calibration,collapse,id_col,map_symbols Passed to
 #'   [pam50_subtype()]; the defaults match it (Zhao on when `subtype_col` is given).
 #' @return A data frame of calls for the full cohort: the reference calls
@@ -54,12 +54,12 @@ pam50_add_samples <- function(reference_expr, reference_samples,
                               calibration = if (zhao) -1 else NA,
                               collapse = "mean", id_col = "sample_id",
                               map_symbols = TRUE, claudin_low = FALSE, layer = NULL,
-                              gene_col = NULL, pam50_id_col = NULL) {
+                              gene_col = NULL, pam50_id_col = NULL, entrez_col = NULL) {
   ref <- .resolve_input(reference_expr, reference_samples, layer, id_col,
-                        gene_col = gene_col, pam50_id_col = pam50_id_col)
+                        gene_col = gene_col, pam50_id_col = pam50_id_col, entrez_col = entrez_col)
   reference_expr <- as.matrix(ref$expr); reference_samples <- ref$samples
   nw <- .resolve_input(new_expr, new_samples, layer, id_col,
-                       gene_col = gene_col, pam50_id_col = pam50_id_col)
+                       gene_col = gene_col, pam50_id_col = pam50_id_col, entrez_col = entrez_col)
   new_expr <- as.matrix(nw$expr); new_samples <- nw$samples
 
   # Drift-proof PAM50 IDs (from pam50_id_col): positional on the resolved rows, so

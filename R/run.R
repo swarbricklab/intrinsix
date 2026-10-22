@@ -74,7 +74,8 @@ pam50_run <- function(config) {
   }
   resolved <- .resolve_input(object, samples_in, cfg$inputs$layer, id_col,
                              gene_col = cfg$inputs$gene_col,
-                             pam50_id_col = cfg$inputs$pam50_id_col)
+                             pam50_id_col = cfg$inputs$pam50_id_col,
+                             entrez_col = cfg$inputs$entrez_col)
   expr <- resolved$expr
   samples <- resolved$samples
   if (is.null(samples)) {
