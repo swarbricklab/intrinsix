@@ -29,8 +29,18 @@ scientific credit for the method and its implementation belongs upstream.
 The PAM50 subtype predictor is from **Parker & Perou et al.**, *J Clin Oncol*
 2009. The Garvan/Swarbrick driver, Zhao4 normalisation and intrinsic
 clustering / claudin-low scripts are by **Alec Lobanov** (Perou Lab), with the
-PAM50 assay protocol from **Arantxa Fernandez-Martinez** (Perou Lab). Unmodified
-upstream snapshots and exact commit pins are kept under [`vendor/`](vendor/).
+PAM50 assay protocol from **Arantxa Fernandez-Martinez** (Perou Lab).
+
+The upstream sources are kept under [`vendor/`](vendor/) for audit (never sourced
+at runtime, and `.Rbuildignore`d so not part of the built package): the two
+perou-lab repositories are pinned **git submodules** (exact, tamper-evident
+upstream commits), and Alec's scripts — the lab's own, with no standalone public
+upstream — are kept as unmodified copies. To populate the submodules in a fresh
+checkout (optional; only to inspect the upstream code):
+
+```bash
+git submodule update --init vendor/perou-lab/*
+```
 
 Where each piece of `R/` comes from:
 
@@ -136,7 +146,7 @@ vignettes/                          'Getting started' vignette
 containers/                         Dockerfile + env for the optional HPC image
 environment.yml                     conda env (portable default)
 inst/extdata/config.example.yaml    config template for `intrinsix run`
-vendor/                             unmodified upstream snapshots (provenance)
+vendor/                             upstream provenance (perou-lab submodules + copies)
 ```
 
 ## Attribution & citation

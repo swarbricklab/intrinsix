@@ -50,7 +50,7 @@ tests/                      testthat (unit + golden)
 vignettes/                  'Getting started'
 environment.yml             conda env (portable default)
 containers/                 Dockerfile + env (optional HPC image)
-vendor/                     UNMODIFIED upstream snapshots (provenance only)
+vendor/                     upstream provenance only (perou-lab submodules + Alec's copies)
 ```
 
 One container: `ghcr.io/swarbricklab/intrinsix` — R + the `intrinsix` package +

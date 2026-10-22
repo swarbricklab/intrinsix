@@ -1,5 +1,5 @@
 # PAM50 subtype prediction. Faithful transcription of the Perou Lab driver
-# (vendor/perou-lab/subtypePrediction_distributed.R, commit 45121d8), refactored
+# (vendor/perou-lab/PAM50_classifier/PAM50_R/subtypePrediction_distributed.R, commit 45121d8), refactored
 # to take explicit arguments instead of reading global variables. The scoring
 # math is byte-for-byte the same; only the I/O and plotting were lifted out.
 #

@@ -1,20 +1,27 @@
-Vendored from the perou-lab PAM50 repositories (research scripts), via the
-bcarc_wts submodule pins, on 2026-10-20:
+Upstream Perou Lab PAM50 research code, kept here as pinned git SUBMODULES (not
+copies) so the provenance is an exact, tamper-evident upstream commit. These are
+reference-only — they are never sourced at runtime; the packaged, refactored
+implementations live in the package's R/ (repo root).
+
+Submodules (authors: Joel S. Parker & Charles M. Perou, Perou Lab):
 
   PAM50_classifier              https://github.com/perou-lab/PAM50_classifier.git
-                                commit 45121d8d6bb01471155e1252591a6dbce1314307
-                                authors: Joel S. Parker & Charles M. Perou (Perou Lab)
-                                (subtypePrediction_distributed.R, subtypePrediction_functions.R,
-                                 pam50_centroids.txt, annotation, calibration medians, training set)
+                                pinned commit 45121d8d6bb01471155e1252591a6dbce1314307
+                                PAM50_R/subtypePrediction_distributed.R  -> R/predict.R (transcribed)
+                                PAM50_R/subtypePrediction_functions.R    -> R/perou_internal.R (verbatim)
+                                                                         + R/perou_plots.R (myplot/pcaEA)
+                                pam50_centroids.txt, annotation, calibration
+                                medians, training set -> inst/extdata/
+
   PAM50_ER_HER2_normalization   https://github.com/perou-lab/PAM50_ER_HER2_normalization.git
-                                commit 9ba84ebc131a58a18446e235c9422d9802f56671
-                                (SIGMA.txt quantiles for Zhao4 normalisation)
+                                pinned commit 9ba84ebc131a58a18446e235c9422d9802f56671
+                                SIGMA.txt (Zhao4 quantiles) -> inst/extdata/SIGMA.txt
 
-Original author of the Garvan/Swarbrick driver + Zhao4 + clustering scripts:
-  Alec Lobanov (Perou Lab), with the PAM50 protocol from
-  Arantxa Fernandez-Martinez (Perou Lab).
+To populate them in a fresh clone/worktree (optional — only needed to inspect the
+upstream sources, never to run intrinsix):
 
-Files in this directory are UNMODIFIED upstream snapshots kept for provenance.
-The refactored, packaged implementations live in the package's R/ (repo root):
-R/perou_internal.R + R/predict.R (from subtypePrediction_*.R, Parker & Perou);
-R/perou_plots.R (from subtypePrediction_functions.R + Lobanov).
+  git submodule update --init vendor/perou-lab/PAM50_classifier \
+                              vendor/perou-lab/PAM50_ER_HER2_normalization
+
+PAM50 assay protocol: Arantxa Fernandez-Martinez (Perou Lab).
+Licence of the upstream repositories: to be confirmed before public release.

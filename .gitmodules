@@ -1,0 +1,6 @@
+[submodule "vendor/perou-lab/PAM50_classifier"]
+	path = vendor/perou-lab/PAM50_classifier
+	url = https://github.com/perou-lab/PAM50_classifier.git
+[submodule "vendor/perou-lab/PAM50_ER_HER2_normalization"]
+	path = vendor/perou-lab/PAM50_ER_HER2_normalization
+	url = https://github.com/perou-lab/PAM50_ER_HER2_normalization.git

@@ -1,5 +1,5 @@
 # Visualisations ported from the Perou Lab scripts
-# (vendor/perou-lab/subtypePrediction_functions.R) and from Alec Lobanov's
+# (vendor/perou-lab/PAM50_classifier/PAM50_R/subtypePrediction_functions.R) and from Alec Lobanov's
 # intrinsic-clustering script. The internal .myplot/.pcaEA helpers are kept close
 # to the originals; the public plot_* functions wrap them to take a pam50_result.
 

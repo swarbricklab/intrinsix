@@ -1,5 +1,5 @@
 # Internal helper functions ported VERBATIM from the Perou Lab classifier
-# (vendor/perou-lab/subtypePrediction_functions.R, commit 45121d8). Kept as-is to
+# (vendor/perou-lab/PAM50_classifier/PAM50_R/subtypePrediction_functions.R, commit 45121d8). Kept as-is to
 # preserve call-identity; only the plotting helpers (myplot/myHeatmap/pcaEA/cols,
 # which pull in ctc/heatmap.plus) are split into perou_plots.R. Do not "clean up"
 # these — any change risks altering subtype calls.
