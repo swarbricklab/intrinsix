@@ -18,5 +18,6 @@ Dispatches \code{run} / \code{add} / \code{classify} / \code{zhao} / \code{clust
 corresponding package functions. \code{run} executes the whole pipeline from a YAML
 config (\code{\link[=pam50_run]{pam50_run()}}); \code{add} does incremental calling of new samples against a
 fixed reference (\code{\link[=pam50_add_samples]{pam50_add_samples()}}). Both are the commands DVC stages invoke.
-Also callable directly: \code{intrinsix::cli(c("run", "--config", "config.yaml"))}.
+Each subcommand has its own \code{--help} (via the \code{argparser} package). Also callable
+directly: \code{intrinsix::cli(c("run", "--config", "config.yaml"))}.
 }

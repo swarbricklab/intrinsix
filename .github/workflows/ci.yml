@@ -21,7 +21,7 @@ jobs:
           use-public-rspm: true
 
       - name: Install test dependencies
-        run: Rscript -e 'install.packages(c("testthat", "withr", "yaml"))'
+        run: Rscript -e 'install.packages(c("testthat", "withr", "yaml", "argparser"))'
 
       - name: Install intrinsix
         run: R CMD INSTALL .

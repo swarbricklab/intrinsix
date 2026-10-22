@@ -26,6 +26,7 @@ License: file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1)
 Imports:
+    argparser,
     graphics,
     grDevices,
     stats,

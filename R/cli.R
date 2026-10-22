@@ -1,79 +1,89 @@
 # Command-line interface. Exposes the same intrinsix functions used from R, so each
 # operation is reachable from both a DVC stage / the shell and an R session (the
-# spotty "one function, two front-ends" idea, in R form). Dependency-free:
-# a minimal base-R flag parser, no optparse.
+# spotty "one function, two front-ends" idea, in R form). Argument parsing uses the
+# lightweight pure-R 'argparser' package: a git-style subcommand dispatch
+# (run/add/classify/zhao/cluster), each subcommand with its own parser so it gets
+# auto `--help`, type coercion, and typo/missing-argument rejection for free.
 #
-#   intrinsix classify --expr E.tsv --out S.tsv [--calibration -1] [--collapse mean] [--map-symbols]
-#   intrinsix zhao     --expr E.tsv --samples M.tsv --subtype-col clinical_subtype [--id-col sample_id] --out Z.tsv
-#   intrinsix cluster  --expr-medctr M.tsv --outdir DIR [--out-claudin C.txt]
-
-.pam50_parse <- function(args) {
-  out <- list()
-  i <- 1L
-  while (i <= length(args)) {
-    a <- args[[i]]
-    if (startsWith(a, "--")) {
-      key <- sub("^--", "", a)
-      if (i + 1L <= length(args) && !startsWith(args[[i + 1L]], "--")) {
-        out[[key]] <- args[[i + 1L]]; i <- i + 2L
-      } else {
-        out[[key]] <- TRUE; i <- i + 1L
-      }
-    } else {
-      i <- i + 1L
-    }
-  }
-  out
-}
+#   intrinsix run       --config config.yaml
+#   intrinsix add       --config add.yaml
+#   intrinsix classify  --expr E.tsv --out S.tsv [--calibration -1] [--collapse mean] [--map-symbols]
+#   intrinsix zhao      --expr E.tsv --samples M.tsv --subtype-col clinical_subtype [--id-col sample_id] --out Z.tsv
+#   intrinsix cluster   --expr-medctr M.tsv --outdir DIR [--out-claudin C.txt]
 
 .read_matrix <- function(path, sep = "\t") {
   as.matrix(utils::read.table(path, sep = sep, header = TRUE, row.names = 1, check.names = FALSE))
 }
 
-.require_opts <- function(opt, needed, cmd) {
-  miss <- needed[!needed %in% names(opt)]
+# argparser leaves optional arguments without a default as NA; enforce the ones we
+# require. `needed` are flag names without the leading "--" (argparser stores them
+# with "-" replaced by "_").
+.need <- function(argv, needed, cmd) {
+  miss <- needed[vapply(gsub("-", "_", needed), function(k) {
+    v <- argv[[k]]; is.null(v) || (length(v) == 1L && is.na(v))
+  }, logical(1))]
   if (length(miss)) {
-    stop(sprintf("intrinsix %s: missing required option(s): %s",
-                 cmd, paste0("--", miss, collapse = ", ")), call. = FALSE)
+    stop(sprintf("intrinsix %s: missing required --%s", cmd,
+                 paste(miss, collapse = ", --")), call. = FALSE)
   }
 }
 
 .cli_classify <- function(args) {
-  opt <- .pam50_parse(args)
-  .require_opts(opt, c("expr", "out"), "classify")
-  expr <- .read_matrix(opt$expr)
-  if (isTRUE(opt$`map-symbols`)) expr <- map_to_pam50(expr)
-  calibration <- if (!is.null(opt$calibration)) as.integer(opt$calibration) else -1L
-  collapse <- if (!is.null(opt$collapse)) opt$collapse else "mean"
-  res <- predict_pam50(expr, calibration = calibration, collapse = collapse)
-  utils::write.table(res, opt$out, sep = "\t", col.names = NA, quote = TRUE)
-  message(sprintf("classify: wrote %d calls -> %s", nrow(res), opt$out))
+  p <- argparser::arg_parser("PAM50 classify an expression matrix", name = "intrinsix classify")
+  p <- argparser::add_argument(p, "--expr", type = "character",
+                               help = "expression matrix TSV (pcrID rows, or HGNC with --map-symbols)")
+  p <- argparser::add_argument(p, "--out", type = "character", help = "output scores TSV")
+  p <- argparser::add_argument(p, "--calibration", type = "integer", default = -1L,
+                               help = "calibration parameter")
+  p <- argparser::add_argument(p, "--collapse", default = "mean",
+                               help = "duplicate-gene collapse method: mean|iqr")
+  p <- argparser::add_argument(p, "--map-symbols", flag = TRUE,
+                               help = "map HGNC symbols to pcrID and subset to the 50 PAM50 genes")
+  argv <- argparser::parse_args(p, args)
+  .need(argv, c("expr", "out"), "classify")
+  expr <- .read_matrix(argv$expr)
+  if (isTRUE(argv$map_symbols)) expr <- map_to_pam50(expr)
+  res <- predict_pam50(expr, calibration = argv$calibration, collapse = argv$collapse)
+  utils::write.table(res, argv$out, sep = "\t", col.names = NA, quote = TRUE)
+  message(sprintf("classify: wrote %d calls -> %s", nrow(res), argv$out))
 }
 
 .cli_zhao <- function(args) {
-  opt <- .pam50_parse(args)
-  .require_opts(opt, c("expr", "samples", "subtype-col", "out"), "zhao")
-  expr <- .read_matrix(opt$expr)
-  id_col <- if (!is.null(opt$`id-col`)) opt$`id-col` else "sample_id"
-  ss <- utils::read.table(opt$samples, sep = "\t", header = TRUE, check.names = FALSE, stringsAsFactors = FALSE)
-  subt <- stats::setNames(as.character(ss[[opt$`subtype-col`]]), ss[[id_col]])
+  p <- argparser::arg_parser("Zhao4 subtype-specific quantile centering", name = "intrinsix zhao")
+  p <- argparser::add_argument(p, "--expr", type = "character", help = "PAM50 expression matrix TSV")
+  p <- argparser::add_argument(p, "--samples", type = "character", help = "sample sheet TSV")
+  p <- argparser::add_argument(p, "--subtype-col", type = "character",
+                               help = "clinical (ER x HER2) subtype column in the sample sheet")
+  p <- argparser::add_argument(p, "--id-col", default = "sample_id",
+                               help = "sample ID column in the sample sheet")
+  p <- argparser::add_argument(p, "--out", type = "character", help = "output normalised matrix TSV")
+  argv <- argparser::parse_args(p, args)
+  .need(argv, c("expr", "samples", "subtype-col", "out"), "zhao")
+  expr <- .read_matrix(argv$expr)
+  ss <- utils::read.table(argv$samples, sep = "\t", header = TRUE, check.names = FALSE, stringsAsFactors = FALSE)
+  subt <- stats::setNames(as.character(ss[[argv$subtype_col]]), ss[[argv$id_col]])
   subt <- subt[colnames(expr)]
   z <- zhao_center(expr, subt)
   utils::write.table(data.frame(Gene = rownames(z), z, check.names = FALSE),
-                     opt$out, sep = "\t", row.names = FALSE, quote = FALSE)
-  message(sprintf("zhao: wrote %d x %d -> %s", nrow(z), ncol(z), opt$out))
+                     argv$out, sep = "\t", row.names = FALSE, quote = FALSE)
+  message(sprintf("zhao: wrote %d x %d -> %s", nrow(z), ncol(z), argv$out))
 }
 
 .cli_run <- function(args) {
-  opt <- .pam50_parse(args)
-  .require_opts(opt, "config", "run")
-  pam50_run(opt$config)
+  p <- argparser::arg_parser("Run the whole PAM50 pipeline from a config", name = "intrinsix run")
+  p <- argparser::add_argument(p, "--config", type = "character", help = "YAML config path")
+  argv <- argparser::parse_args(p, args)
+  .need(argv, "config", "run")
+  pam50_run(argv$config)
 }
 
 .cli_add <- function(args) {
-  opt <- .pam50_parse(args)
-  .require_opts(opt, "config", "add")
-  cfg <- yaml::read_yaml(opt$config)
+  p <- argparser::arg_parser("Incremental calling: new samples vs a fixed reference",
+                             name = "intrinsix add")
+  p <- argparser::add_argument(p, "--config", type = "character", help = "YAML config path")
+  argv <- argparser::parse_args(p, args)
+  .need(argv, "config", "add")
+  cfg <- yaml::read_yaml(argv$config)
   id_col <- cfg$sample_id_column %||% "sample_id"
   # expression: pass an .h5ad path through (resolved downstream), else read the TSV.
   read_expr <- function(p) if (grepl("\\.h5ad$", p, ignore.case = TRUE)) p else .read_matrix(p)
@@ -105,19 +115,27 @@
 }
 
 .cli_cluster <- function(args) {
-  opt <- .pam50_parse(args)
-  .require_opts(opt, c("expr-medctr", "outdir"), "cluster")
-  m <- .read_matrix(opt$`expr-medctr`)
-  dir.create(opt$outdir, recursive = TRUE, showWarnings = FALSE)
-  res <- centroid_clustering(m, prefix = "intrinsic_expr_medCtr", path = opt$outdir, write_files = TRUE)
+  p <- argparser::arg_parser("Intrinsic clustering + claudin-low identification",
+                             name = "intrinsix cluster")
+  p <- argparser::add_argument(p, "--expr-medctr", type = "character",
+                               help = "median-centred intrinsic expression matrix TSV")
+  p <- argparser::add_argument(p, "--outdir", type = "character", help = "output directory")
+  p <- argparser::add_argument(p, "--out-claudin", type = "character",
+                               help = "optional output path for the claudin-low sample list")
+  argv <- argparser::parse_args(p, args)
+  .need(argv, c("expr-medctr", "outdir"), "cluster")
+  m <- .read_matrix(argv$expr_medctr)
+  dir.create(argv$outdir, recursive = TRUE, showWarnings = FALSE)
+  res <- centroid_clustering(m, prefix = "intrinsic_expr_medCtr", path = argv$outdir, write_files = TRUE)
   clow <- identify_claudin_low(res, m)
-  if (!is.null(opt$`out-claudin`)) writeLines(clow, opt$`out-claudin`)
+  write_clow <- !is.null(argv$out_claudin) && !is.na(argv$out_claudin)
+  if (write_clow) writeLines(clow, argv$out_claudin)
   message(sprintf("cluster: %d claudin-low sample(s)%s", length(clow),
-                  if (!is.null(opt$`out-claudin`)) paste0(" -> ", opt$`out-claudin`) else ""))
+                  if (write_clow) paste0(" -> ", argv$out_claudin) else ""))
 }
 
 .pam50_usage <- function() {
-  message("intrinsix <command> [options]\n",
+  message("intrinsix <command> [options]   (run `intrinsix <command> --help` for details)\n",
           "\nCommands:\n",
           "  run       --config config.yaml   (whole pipeline, config-driven)\n",
           "  add       --config add.yaml      (incremental: new samples vs a fixed reference)\n",
@@ -132,7 +150,8 @@
 #' corresponding package functions. `run` executes the whole pipeline from a YAML
 #' config ([pam50_run()]); `add` does incremental calling of new samples against a
 #' fixed reference ([pam50_add_samples()]). Both are the commands DVC stages invoke.
-#' Also callable directly: `intrinsix::cli(c("run", "--config", "config.yaml"))`.
+#' Each subcommand has its own `--help` (via the `argparser` package). Also callable
+#' directly: `intrinsix::cli(c("run", "--config", "config.yaml"))`.
 #'
 #' @param args Character vector of command-line arguments (default: the process
 #'   arguments after `--args`).
