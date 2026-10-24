@@ -12,12 +12,14 @@
   labs <- c("Basal", "Her2", "LumA", "LumB", "Normal")
   for (k in 1:5) {
     graphics::boxplot(y$distances[, k] ~ y$prediction, border = 8,
+                      xlab = "Predicted subtype",
                       ylab = paste(labs[k], "Correlation"),
                       main = paste(short, ": ", labs[k], sep = ""))
     graphics::stripchart(y$distances[, k] ~ y$prediction, vertical = TRUE,
                          method = "jitter", pch = 3, add = TRUE)
   }
-  graphics::boxplot(pro ~ y$prediction, border = 8, ylab = "Proliferation Index",
+  graphics::boxplot(pro ~ y$prediction, border = 8, xlab = "Predicted subtype",
+                    ylab = "Proliferation Index",
                     main = paste(short, ": Proliferation Index", sep = ""))
   graphics::stripchart(pro ~ y$prediction, vertical = TRUE, method = "jitter",
                        pch = 3, add = TRUE)

@@ -1,6 +1,5 @@
 ---
 title: "`r params$title`"
-date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
 output:
   html_document:
     self_contained: true
@@ -22,6 +21,10 @@ params:
 # plot functions, so the figures match the saved PDFs exactly.
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
                       fig.align = "center", dev = "png", dpi = 110)
+# Deterministic report: fix the RNG so the only random bits in the figures (the
+# stripchart point jitter, any impute::impute.knn tie-breaking) render identically
+# on every run. This affects figure appearance only, never the numeric results.
+set.seed(1L)
 res   <- params$result
 cfg   <- params$cfg
 calls <- res$calls
