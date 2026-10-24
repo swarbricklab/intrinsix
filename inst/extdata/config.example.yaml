@@ -68,3 +68,8 @@ intrinsic_clustering:
 # -- Outputs -- #
 outs:
   output_dir: "results/intrinsix"
+  # Opt-in self-contained HTML report (visualisations + results table + prose).
+  # Off by default; equivalent to `intrinsix run --report`. Needs rmarkdown+knitr.
+  # report: true
+  # Custom report path (implies report: true; default <output_dir>/intrinsix_report.html):
+  # report_html: "results/intrinsix/report.html"

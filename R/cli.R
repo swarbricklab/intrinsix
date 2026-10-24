@@ -5,7 +5,7 @@
 # (run/add/classify/zhao/cluster), each subcommand with its own parser so it gets
 # auto `--help`, type coercion, and typo/missing-argument rejection for free.
 #
-#   intrinsix run       --config config.yaml
+#   intrinsix run       --config config.yaml [--report] [--report-html report.html]
 #   intrinsix add       --config add.yaml
 #   intrinsix classify  --expr E.tsv --out S.tsv [--calibration -1] [--collapse mean] [--map-symbols]
 #   intrinsix zhao      --expr E.tsv --samples M.tsv --subtype-col clinical_subtype [--id-col sample_id] --out Z.tsv
@@ -72,9 +72,14 @@
 .cli_run <- function(args) {
   p <- argparser::arg_parser("Run the whole PAM50 pipeline from a config", name = "intrinsix run")
   p <- argparser::add_argument(p, "--config", type = "character", help = "YAML config path")
+  p <- argparser::add_argument(p, "--report", flag = TRUE,
+                               help = "also write a self-contained HTML report (plots + results table) to the output dir")
+  p <- argparser::add_argument(p, "--report-html", type = "character",
+                               help = "path for the HTML report (implies --report; default <output_dir>/intrinsix_report.html)")
   argv <- argparser::parse_args(p, args)
   .need(argv, "config", "run")
-  pam50_run(argv$config)
+  report_html <- if (!is.null(argv$report_html) && !is.na(argv$report_html)) argv$report_html else NULL
+  pam50_run(argv$config, report = isTRUE(argv$report), report_html = report_html)
 }
 
 .cli_add <- function(args) {
@@ -137,7 +142,7 @@
 .pam50_usage <- function() {
   message("intrinsix <command> [options]   (run `intrinsix <command> --help` for details)\n",
           "\nCommands:\n",
-          "  run       --config config.yaml   (whole pipeline, config-driven)\n",
+          "  run       --config config.yaml [--report] [--report-html PATH]  (whole pipeline, config-driven)\n",
           "  add       --config add.yaml      (incremental: new samples vs a fixed reference)\n",
           "  classify  --expr E.tsv --out S.tsv [--calibration -1] [--collapse mean] [--map-symbols]\n",
           "  zhao      --expr E.tsv --samples M.tsv --subtype-col COL [--id-col sample_id] --out Z.tsv\n",

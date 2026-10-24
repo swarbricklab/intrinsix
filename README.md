@@ -123,6 +123,20 @@ inherited from the input's `obs`/`colData` (narrow it with
 column is an error. Set `classifier.legacy_perou_scores: true` to also emit the
 legacy Perou-format `"<prefix>_pam50scores.txt"` for scripts that expect it.
 
+Add `--report` for an **opt-in, self-contained HTML report** — the run's
+visualisations (per-subtype correlation boxplots, training-vs-test PCA, and, when
+clustering is on, the intrinsic heatmap + silhouette) plus the per-sample results
+table, with explanatory prose for a reader new to the run. It is written to
+`<output_dir>/intrinsix_report.html` (override with `--report-html PATH`, or set
+`outs.report: true` in the config). The report needs the `rmarkdown` + `knitr`
+packages (`Suggests`); default behaviour is unchanged when the flag is off.
+
+```bash
+intrinsix run --config config.yaml --report                 # -> <output_dir>/intrinsix_report.html
+intrinsix run --config config.yaml --report-html report.html
+# or from R: pam50_run("config.yaml", report = TRUE)
+```
+
 ### Running environments
 
 The package is pure R, so pick whatever the platform has — **no singularity

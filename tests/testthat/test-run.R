@@ -98,6 +98,44 @@ test_that("metadata_columns naming a missing column is an error", {
   expect_error(suppressWarnings(pam50_run(cfg)), "not in sample metadata")
 })
 
+test_that("pam50_run writes an opt-in HTML report", {
+  skip_if_not_installed("rmarkdown")
+  skip_if_not_installed("knitr")
+  skip_if(!nzchar(rmarkdown::pandoc_available()), "pandoc not available")
+
+  td <- withr::local_tempdir()
+  ann <- pam50_annotation()
+  set.seed(3)
+  genes <- c(ann$GeneName, "XIST", "GAPDH")
+  m <- matrix(round(rnorm(length(genes) * 6), 3), length(genes), 6,
+              dimnames = list(genes, paste0("S", 1:6)))
+  write.table(data.frame(gene = rownames(m), m, check.names = FALSE),
+              file.path(td, "expr.tsv"), sep = "\t", row.names = FALSE, quote = FALSE)
+  write.table(data.frame(sample_id = paste0("S", 1:6)),
+              file.path(td, "samples.tsv"), sep = "\t", row.names = FALSE, quote = FALSE)
+
+  cfg <- list(
+    inputs = list(expression = file.path(td, "expr.tsv"),
+                  samples = file.path(td, "samples.tsv"),
+                  sample_id_column = "sample_id"),
+    filter = list(column = NULL, include = list()),
+    deduplicate = list(by = NULL),
+    zhao_normalization = list(enabled = FALSE, subtype_column = NULL),
+    classifier = list(calibration = NA, collapse_method = "mean",
+                      has_clinical = FALSE, prefix = "PAM50scores"),
+    intrinsic_clustering = list(enabled = FALSE),
+    outs = list(output_dir = file.path(td, "out"))
+  )
+
+  suppressWarnings(pam50_run(cfg, report = TRUE))
+  rp <- file.path(td, "out", "intrinsix_report.html")
+  expect_true(file.exists(rp))
+  expect_gt(file.info(rp)$size, 1000)
+  html <- paste(readLines(rp, warn = FALSE), collapse = "\n")
+  expect_match(html, "PAM50", fixed = TRUE)
+  expect_match(html, "Results table", fixed = TRUE)
+})
+
 test_that("pam50_run validates required config keys", {
   expect_error(pam50_run(list(inputs = list())), "missing")
 })

@@ -4,11 +4,22 @@
 \alias{pam50_run}
 \title{Run the PAM50 pipeline from a config file}
 \usage{
-pam50_run(config)
+pam50_run(config, report = FALSE, report_html = NULL)
 }
 \arguments{
 \item{config}{Path to a YAML config, or an already-parsed config list. See
 the bundled template: \code{system.file("extdata", "config.example.yaml", package = "intrinsix")}.}
+
+\item{report}{Logical; after the run, also write a single self-contained HTML
+report (the run's visualisations plus a results table, with explanatory
+prose) to the output directory. Default \code{FALSE} (existing behaviour
+unchanged). Can also be set in the config as \code{outs$report: true}. Needs the
+\code{rmarkdown} and \code{knitr} packages (\code{Suggests}); if they are missing the report
+is skipped with a warning.}
+
+\item{report_html}{Optional path for the HTML report. Implies \code{report = TRUE};
+defaults to \verb{<output_dir>/intrinsix_report.html}. Can also be set in the
+config as \code{outs$report_html}.}
 }
 \value{
 The \link{pam50_result}, invisibly. Side effect: writes to
