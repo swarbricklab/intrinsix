@@ -26,6 +26,9 @@ inputs:
   samples: "samples.tsv"
   # Column in `samples` holding the sample IDs (must match expression columns).
   sample_id_column: "sample_id"
+  # Optional: carry only these sample-metadata columns (from obs/colData or the
+  # `samples` sheet) into pam50_calls.tsv. Omit to carry all metadata columns.
+  # metadata_columns: ["tissue_id", "donor_id", "clinical_subtype"]
 
 # -- Sample selection -- #
 # Default: no filter => PAM50 is called on ALL samples.
@@ -53,6 +56,10 @@ classifier:
   collapse_method: "mean"  # mean | iqr
   has_clinical: false      # ROR-C needs a T-stage column; keep false unless provided
   prefix: "PAM50scores"
+  # Also emit the legacy Perou-format "<prefix>_pam50scores.txt" (quoted, unnamed
+  # first column) for Perou Lab scripts. Default false => only the clean
+  # pam50_calls.tsv is written.
+  legacy_perou_scores: false
 
 # -- Intrinsic clustering / claudin-low -- #
 intrinsic_clustering:

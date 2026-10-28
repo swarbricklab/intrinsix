@@ -27,9 +27,7 @@ jobs:
         run: R CMD INSTALL .
 
       - name: Run golden + unit tests
-        run: |
-          Rscript -e 'suppressMessages({library(testthat); library(intrinsix)}); \
-            test_dir("tests/testthat", stop_on_failure = TRUE)'
+        run: Rscript -e 'suppressMessages({library(testthat); library(intrinsix)}); test_dir("tests/testthat", stop_on_failure = TRUE)'
 
       - name: CLI smoke test
         run: |

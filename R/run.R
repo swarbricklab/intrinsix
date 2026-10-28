@@ -49,6 +49,29 @@
 #' command a DVC stage invokes (via `intrinsix run --config config.yaml`), in a conda
 #' environment or the container.
 #'
+#' @section Output:
+#' Writes a single well-formed call table, `pam50_calls.tsv`, to
+#' `outs$output_dir`: one row per sample, a named id column
+#' (`inputs$sample_id_column`), then the carried-through sample metadata, then the
+#' classifier columns under clean, unique, snake_case names — `call`,
+#' `confidence`, `score_basal`..`score_normal`, `ror_s`, `ror_s_group`,
+#' `proliferation_score`, `ror_p`, `ror_p_group`, `er_signature`,
+#' `her2_signature`, plus `call_clow`, `silhouette_width`, `sil_width_bin` when
+#' `intrinsic_clustering` is enabled. Values are unquoted. (The in-memory
+#' [pam50_result] keeps the raw Perou-native column names; only the file output is
+#' renamed.)
+#'
+#' Sample metadata is inherited from the input's `obs` / `colData` (or the
+#' `inputs$samples` sheet). Every metadata column is carried through by default;
+#' set `inputs$metadata_columns` to an allowlist to keep only those. If a carried
+#' metadata column name collides with a classifier output column, the run stops
+#' with an error (rename it upstream, or drop it via `inputs$metadata_columns`).
+#'
+#' Set `classifier$legacy_perou_scores: true` to additionally emit the legacy
+#' Perou-format `"<prefix>_pam50scores.txt"` (quoted cells, unnamed first column,
+#' duplicate `Her2`) for downstream Perou Lab scripts that expect it. Off by
+#' default.
+#'
 #' @param config Path to a YAML config, or an already-parsed config list. See
 #'   the bundled template: `system.file("extdata", "config.example.yaml",
 #'   package = "intrinsix")`.
@@ -104,16 +127,73 @@ pam50_run <- function(config) {
   dir.create(out, recursive = TRUE, showWarnings = FALSE)
   prefix <- cfg$classifier$prefix %||% "PAM50scores"
 
-  # raw scores (same layout as the reference *_pam50scores.txt)
-  score_cols <- setdiff(colnames(res$calls), c("Call_CLOW", "silhouette_width"))
-  utils::write.table(res$calls[, score_cols], file.path(out, paste0(prefix, "_pam50scores.txt")),
-                     sep = "\t", col.names = NA, quote = TRUE)
+  # Optional legacy Perou-format scores file (off by default). Reproduces the
+  # historical "<prefix>_pam50scores.txt" exactly: native classifier column names
+  # (which include a duplicate 'Her2' and the ER/HER2 signature columns), quoted
+  # cells, unnamed first column — for Perou Lab scripts that parse that format.
+  if (isTRUE(cfg$classifier$legacy_perou_scores)) {
+    score_cols <- setdiff(colnames(res$calls), c("Call_CLOW", "silhouette_width"))
+    utils::write.table(res$calls[, score_cols], file.path(out, paste0(prefix, "_pam50scores.txt")),
+                       sep = "\t", col.names = NA, quote = TRUE)
+  }
 
-  # enriched call table (scores + sample-sheet metadata)
+  # Clean, well-formed call table (the default, and only, tabular output). The
+  # classifier core keeps the Perou-native column names; we rename them to a
+  # unique, snake_case schema here (res$calls itself is left untouched). The first
+  # `n_core` columns are the fixed classifier block (see .classify_core); any
+  # trailing columns are the optional clustering annotations.
+  expected_native <- c(
+    "Basal", "Her2", "LumA", "LumB", "Normal", "Call", "Confidence",
+    "ROR-S (Subtype Only)", "ROR-S Group (Subtype Only)", "Proliferation Score",
+    "ROR-P (Subtype + Proliferation)", "ROR-P Group (Subtype + Proliferation)",
+    "ER", "Her2"
+  )
+  clean_names <- c(
+    "score_basal", "score_her2", "score_luma", "score_lumb", "score_normal",
+    "call", "confidence", "ror_s", "ror_s_group", "proliferation_score",
+    "ror_p", "ror_p_group", "er_signature", "her2_signature"
+  )
+  n_core <- length(expected_native)
+  if (ncol(res$calls) < n_core ||
+      !identical(colnames(res$calls)[seq_len(n_core)], expected_native)) {
+    stop("intrinsix: unexpected classifier column layout; cannot build the clean ",
+         "output. This is an internal error — please report it.", call. = FALSE)
+  }
+  scores_clean <- res$calls[, seq_len(n_core), drop = FALSE]
+  colnames(scores_clean) <- clean_names
+  if (!is.null(res$calls$Call_CLOW)) scores_clean$call_clow <- res$calls$Call_CLOW
+  if (!is.null(res$calls$silhouette_width)) {
+    scores_clean$silhouette_width <- res$calls$silhouette_width
+    scores_clean$sil_width_bin <- ifelse(res$calls$silhouette_width < 0, "Negative", "Positive")
+  }
+
+  # Sample metadata inherited from obs/colData (or inputs$samples). Carry every
+  # column by default; inputs$metadata_columns narrows it to an allowlist.
   meta_cols <- setdiff(colnames(samples), id_col)
-  calls <- data.frame(sample = rownames(res$calls),
-                      samples[rownames(res$calls), meta_cols, drop = FALSE],
-                      res$calls, check.names = FALSE, row.names = NULL)
+  allow <- cfg$inputs$metadata_columns
+  if (!is.null(allow)) {
+    allow <- as.character(unlist(allow))
+    absent <- setdiff(allow, colnames(samples))
+    if (length(absent)) {
+      stop(sprintf("inputs$metadata_columns: column(s) not in sample metadata: %s",
+                   paste(absent, collapse = ", ")), call. = FALSE)
+    }
+    meta_cols <- setdiff(allow, id_col)
+  }
+  # Error on clash: a carried metadata column must not shadow a classifier column.
+  clash <- intersect(meta_cols, colnames(scores_clean))
+  if (length(clash)) {
+    stop(sprintf(paste0("intrinsix: sample-metadata column(s) collide with classifier ",
+                        "output columns: %s. Rename them upstream, or exclude them via ",
+                        "inputs$metadata_columns."),
+                 paste(clash, collapse = ", ")), call. = FALSE)
+  }
+
+  ids <- rownames(res$calls)
+  calls <- data.frame(.id = ids,
+                      samples[ids, meta_cols, drop = FALSE],
+                      scores_clean,
+                      check.names = FALSE, row.names = NULL, stringsAsFactors = FALSE)
   colnames(calls)[1] <- id_col
   utils::write.table(calls, file.path(out, "pam50_calls.tsv"),
                      sep = "\t", row.names = FALSE, quote = FALSE)
@@ -122,23 +202,13 @@ pam50_run <- function(config) {
     hdir <- file.path(out, "intrinsic_heatmap")
     dir.create(hdir, recursive = TRUE, showWarnings = FALSE)
 
-    clow_df <- data.frame(sample = rownames(res$calls),
-                          PAM50_Call = res$calls$Call,
-                          PAM50_Call_CLOW = res$calls$Call_CLOW,
-                          check.names = FALSE, row.names = NULL)
-    if (!is.null(res$calls$silhouette_width)) {
-      clow_df$silhouette_width <- res$calls$silhouette_width
-      clow_df$sil_width_bin <- ifelse(res$calls$silhouette_width < 0, "Negative", "Positive")
-    }
-    utils::write.table(clow_df, file.path(out, "pam50_calls_clow.tsv"),
-                       sep = "\t", row.names = FALSE, quote = FALSE)
-
     if (requireNamespace("ComplexHeatmap", quietly = TRUE)) {
-      ann <- clow_df[, intersect(c("PAM50_Call_CLOW", "sil_width_bin"), colnames(clow_df)), drop = FALSE]
-      rownames(ann) <- clow_df$sample
-      ids <- colnames(res$intrinsic$int_medctr)
-      pam50_heatmap(res$intrinsic$int_medctr, annotations = ann[ids, , drop = FALSE],
-                    title = sprintf("Intrinsic subtype heatmap (n=%d)", length(ids)),
+      ann_cols <- intersect(c("call_clow", "sil_width_bin"), colnames(scores_clean))
+      ann <- scores_clean[, ann_cols, drop = FALSE]
+      rownames(ann) <- ids
+      hm_ids <- colnames(res$intrinsic$int_medctr)
+      pam50_heatmap(res$intrinsic$int_medctr, annotations = ann[hm_ids, , drop = FALSE],
+                    title = sprintf("Intrinsic subtype heatmap (n=%d)", length(hm_ids)),
                     file = file.path(hdir, "intrinsic_medctr_heatmap.pdf"))
     }
     if (!is.null(res$intrinsic$silhouette)) {

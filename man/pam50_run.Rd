@@ -22,3 +22,28 @@ classify -> optional intrinsic clustering), and writes the outputs. This is the
 command a DVC stage invokes (via \verb{intrinsix run --config config.yaml}), in a conda
 environment or the container.
 }
+\section{Output}{
+
+Writes a single well-formed call table, \code{pam50_calls.tsv}, to
+\code{outs$output_dir}: one row per sample, a named id column
+(\code{inputs$sample_id_column}), then the carried-through sample metadata, then the
+classifier columns under clean, unique, snake_case names -- \code{call},
+\code{confidence}, \code{score_basal}..\code{score_normal}, \code{ror_s}, \code{ror_s_group},
+\code{proliferation_score}, \code{ror_p}, \code{ror_p_group}, \code{er_signature},
+\code{her2_signature}, plus \code{call_clow}, \code{silhouette_width}, \code{sil_width_bin} when
+\code{intrinsic_clustering} is enabled. Values are unquoted. (The in-memory
+\link{pam50_result} keeps the raw Perou-native column names; only the file output is
+renamed.)
+
+Sample metadata is inherited from the input's \code{obs} / \code{colData} (or the
+\code{inputs$samples} sheet). Every metadata column is carried through by default;
+set \code{inputs$metadata_columns} to an allowlist to keep only those. If a carried
+metadata column name collides with a classifier output column, the run stops
+with an error (rename it upstream, or drop it via \code{inputs$metadata_columns}).
+
+Set \code{classifier$legacy_perou_scores: true} to additionally emit the legacy
+Perou-format \code{"<prefix>_pam50scores.txt"} (quoted cells, unnamed first column,
+duplicate \code{Her2}) for downstream Perou Lab scripts that expect it. Off by
+default.
+}
+
