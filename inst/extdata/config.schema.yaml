@@ -104,5 +104,15 @@ properties:
     properties:
       output_dir:
         type: string
+      report:
+        type: boolean
+        description: >-
+          Opt-in: also write a self-contained HTML report (visualisations +
+          results table + prose) to the output dir. Needs rmarkdown + knitr.
+      report_html:
+        type: string
+        description: >-
+          Custom path for the HTML report (implies report: true; default
+          <output_dir>/intrinsix_report.html).
     required: [output_dir]
 required: [inputs, filter, zhao_normalization, classifier, intrinsic_clustering, outs]

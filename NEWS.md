@@ -63,3 +63,11 @@ First packaged release — an installable R package (`intrinsix`) with a config-
 ## Command line
 
 * `intrinsix` CLI (`classify` / `zhao` / `cluster`) over the same functions.
+
+## Reporting
+
+* Opt-in self-contained HTML report for `intrinsix run` / `pam50_run()`
+  (`--report` / `--report-html PATH`, or `report = TRUE`; also `outs.report` in the
+  config). Embeds the run's visualisations and a per-sample results table with
+  explanatory prose. Rendered from `inst/rmd/intrinsix_report.Rmd` via `rmarkdown`
+  + `knitr` (`Suggests`). Off by default — no change to existing behaviour.

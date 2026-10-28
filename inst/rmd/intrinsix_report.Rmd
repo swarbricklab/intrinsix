@@ -1,0 +1,230 @@
+---
+title: "`r params$title`"
+output:
+  html_document:
+    self_contained: true
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    theme: readable
+    df_print: paged
+params:
+  result: null
+  cfg: null
+  title: "intrinsix PAM50 report"
+---
+
+```{r setup, include=FALSE}
+# Self-contained report template for `intrinsix run --report` / pam50_run(report = TRUE).
+# It is rendered from a copy in a temp dir (see R/report.R) with the run's
+# pam50_result + config passed in via `params`; it re-draws the package's own
+# plot functions, so the figures match the saved PDFs exactly.
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
+                      fig.align = "center", dev = "png", dpi = 110)
+# Deterministic report: fix the RNG so the only random bits in the figures (the
+# stripchart point jitter, any impute::impute.knn tie-breaking) render identically
+# on every run. This affects figure appearance only, never the numeric results.
+set.seed(1L)
+res   <- params$result
+cfg   <- params$cfg
+calls <- res$calls
+n     <- nrow(calls)
+has_cluster <- !is.null(res$intrinsic)
+call_col <- if (!is.null(calls$Call_CLOW)) "Call_CLOW" else "Call"
+```
+
+This report summarises a PAM50 intrinsic-subtyping run produced by the
+[**intrinsix**](https://github.com/swarbricklab/intrinsix) R package. It is
+self-contained: all figures and tables are embedded, so it can be shared as a
+single file.
+
+## What PAM50 subtyping is
+
+PAM50 assigns each breast-tumour expression profile to one of **five intrinsic
+molecular subtypes** — **Luminal A (LumA)**, **Luminal B (LumB)**,
+**HER2-enriched (Her2)**, **Basal-like (Basal)**, and **Normal-like (Normal)** —
+by comparing the sample's expression of 50 signature genes to five published
+reference *centroids* (Parker, Perou *et al.*, *J Clin Oncol* 2009). The sample
+is called as the subtype whose centroid it is **most correlated** with (Spearman
+rank correlation). From the same correlations the method derives the **ROR**
+(Risk Of Recurrence) scores. When intrinsic clustering is enabled, a
+**claudin-low (CLOW)** group can additionally be identified.
+
+Each call is a *relative* assignment to the nearest of five profiles — read it
+together with the per-subtype correlations and the confidence value below, not
+in isolation.
+
+## Run overview
+
+```{r overview}
+params_tbl <- data.frame(
+  Setting = c("Samples classified",
+              "Zhao4 normalisation",
+              "Calibration",
+              "Duplicate-gene collapse",
+              "Intrinsic clustering / claudin-low"),
+  Value = c(
+    n,
+    if (isTRUE(res$params$zhao)) "on" else "off",
+    as.character(res$params$calibration),
+    res$params$collapse,
+    if (has_cluster) "on" else "off"
+  ),
+  check.names = FALSE
+)
+knitr::kable(params_tbl, caption = "Run configuration.")
+```
+
+### Subtype distribution
+
+```{r distribution}
+tab <- as.data.frame(table(Subtype = calls[[call_col]]), responseName = "Samples")
+tab$`% of cohort` <- round(100 * tab$Samples / sum(tab$Samples), 1)
+knitr::kable(tab, caption = sprintf("Number of samples per call (column: %s).", call_col))
+```
+
+```{r distribution-bar, fig.width=6, fig.height=4, fig.cap="Subtype call counts across the cohort."}
+op <- graphics::par(mar = c(5, 4, 2, 1))
+cols <- c(Basal = "red", Her2 = "hotpink", LumA = "darkblue",
+          LumB = "skyblue", Normal = "forestgreen", CLOW = "orange")
+bp <- table(calls[[call_col]])
+graphics::barplot(bp, col = cols[names(bp)], ylab = "Samples",
+                  main = "", las = 1)
+graphics::par(op)
+```
+
+## Visualisations
+
+### Per-subtype centroid correlations
+
+The six panels below (one per subtype, plus the proliferation index) show, for
+each predicted call, the distribution of that sample group's **correlation to
+every subtype centroid**. A clean classification shows each group peaking on its
+*own* centroid panel and sitting lower on the others; overlap between groups
+flags samples whose call is less clear-cut. The final panel is the
+**proliferation index** (mean standardised expression of the proliferation
+genes), which rises from LumA through LumB/Her2/Basal and underlies the ROR-P
+score.
+
+```{r scores-plot, fig.width=9, fig.height=10, fig.cap="Per-subtype centroid-correlation boxplots (samples grouped by predicted call) and the proliferation index."}
+ok <- tryCatch({ intrinsix::plot_pam50_scores(res); TRUE },
+               error = function(e) { message("score plot failed: ", conditionMessage(e)); FALSE })
+```
+
+```{r scores-plot-note, results="asis"}
+if (!exists("ok") || !isTRUE(ok)) cat("*Score-distribution plot could not be drawn for this run.*\n")
+```
+
+### Training + test PCA
+
+The three PCA panels place the classified samples against the published PAM50
+**training set**: coloured by cohort (train vs this run), by the training
+samples' known subtypes, and by the predicted calls for this run. They show
+whether the cohort occupies the same expression space as the reference and
+whether the calls fall where the corresponding training subtypes sit.
+
+```{r pca-plot, fig.width=12, fig.height=4.5, fig.cap="PCA of the training set plus this run's samples: by cohort, by training subtype, and by predicted call."}
+ok_pca <- tryCatch({ intrinsix::plot_pam50_pca(res); TRUE },
+                   error = function(e) { message("PCA plot failed: ", conditionMessage(e)); FALSE })
+```
+
+```{r pca-plot-note, results="asis"}
+if (!exists("ok_pca") || !isTRUE(ok_pca)) cat("*PCA plot could not be drawn for this run (e.g. too few overlapping genes).*\n")
+```
+
+```{r cluster-section, eval=has_cluster, results="asis"}
+cat("### Intrinsic-subtype heatmap and claudin-low\n\n")
+cat("Intrinsic clustering was enabled. The heatmap shows median-centred",
+    "expression of the intrinsic gene set (genes x samples), annotated with the",
+    "claudin-low-adjusted call and the silhouette sign. The silhouette plot",
+    "quantifies how well each sample fits its assigned cluster (1 - Pearson",
+    "distance): positive widths indicate a good fit, negative widths a sample",
+    "that sits closer to another group.\n\n")
+cat(sprintf("**Claudin-low samples identified: %d.**\n\n",
+            length(res$intrinsic$claudin_low)))
+```
+
+```{r heatmap, eval=has_cluster, fig.width=10, fig.height=7, fig.cap="Median-centred intrinsic-gene expression heatmap (blue = low, yellow = high)."}
+if (requireNamespace("ComplexHeatmap", quietly = TRUE) &&
+    requireNamespace("circlize", quietly = TRUE)) {
+  clow <- res$intrinsic$claudin_low
+  ann <- data.frame(
+    Call_CLOW = calls[colnames(res$intrinsic$int_medctr), "Call_CLOW"],
+    check.names = FALSE
+  )
+  rownames(ann) <- colnames(res$intrinsic$int_medctr)
+  if (!is.null(calls$silhouette_width)) {
+    ann$sil_width_bin <- ifelse(
+      calls[rownames(ann), "silhouette_width"] < 0, "Negative", "Positive")
+  }
+  hm <- tryCatch(
+    intrinsix::pam50_heatmap(res$intrinsic$int_medctr, annotations = ann,
+                             title = sprintf("Intrinsic subtype heatmap (n=%d)",
+                                             ncol(res$intrinsic$int_medctr))),
+    error = function(e) { message("heatmap failed: ", conditionMessage(e)); NULL })
+  if (!is.null(hm)) ComplexHeatmap::draw(hm)
+} else {
+  message("ComplexHeatmap/circlize not installed; skipping heatmap.")
+}
+```
+
+```{r silhouette, eval=has_cluster, fig.width=9, fig.height=7, fig.cap="Silhouette widths per sample, grouped by claudin-low-adjusted call."}
+if (!is.null(res$intrinsic$silhouette)) {
+  graphics::plot(res$intrinsic$silhouette, border = NA)
+  graphics::abline(v = 0)
+}
+```
+
+## Results table
+
+One row per sample with its call and the underlying scores. Column meanings:
+
+- **Basal / Her2 / LumA / LumB / Normal** — Spearman correlation of the sample to
+  each subtype centroid (higher = more similar).
+- **Call** — the assigned subtype (the centroid with the highest correlation).
+- **Confidence** — `1 - p` of the Spearman correlation test between the sample and
+  its assigned centroid; values near **1** indicate a confident call, lower values
+  a weaker fit.
+- **ROR-S (Subtype Only)** / **ROR-P (Subtype + Proliferation)** — Risk Of
+  Recurrence scores (0-100), with their **low / med / high** group columns.
+- **Proliferation Score** — mean standardised expression of the proliferation
+  genes.
+- **ER / Her2** — standardised expression of `ESR1` / `ERBB2`.
+```{r table-extra-cols, results="asis"}
+if (!is.null(calls$Call_CLOW)) cat("- **Call_CLOW** — the call after claudin-low reassignment.\n")
+if (!is.null(calls$silhouette_width)) cat("- **silhouette_width** — cluster-fit width (positive = good fit).\n")
+```
+
+```{r results-table}
+disp <- data.frame(Sample = rownames(calls), calls, check.names = FALSE,
+                   row.names = NULL)
+# round any numeric-looking columns for display
+num_cols <- setdiff(names(disp), "Sample")
+for (cc in num_cols) {
+  v <- suppressWarnings(as.numeric(disp[[cc]]))
+  if (!all(is.na(v))) disp[[cc]] <- ifelse(is.na(v), disp[[cc]], format(round(v, 3)))
+}
+knitr::kable(disp, row.names = FALSE,
+             caption = sprintf("Per-sample PAM50 calls and scores (n = %d).", n))
+```
+
+## Caveats
+
+- PAM50 is a **single-sample, relative** classifier: every sample is forced into
+  the nearest of five (or six, with claudin-low) reference profiles. A call with
+  low confidence or overlapping centroid correlations should be treated with
+  caution.
+- Results depend on the input being appropriately **normalised** (log2-scale;
+  Zhao4 subtype-specific centering when enabled) and on the **gene set matching**
+  the classifier — gene-symbol drift can silently drop signature genes, so prefer
+  the ID-based selection paths where possible.
+- Centroid correlations are computed on the 50 PAM50 genes; the intrinsic
+  heatmap/clustering uses the larger intrinsic gene set.
+- This report presents the run as-is; it does not re-run or alter the
+  classification. The authoritative outputs are the TSV/`.txt` files written
+  alongside it.
+
+---
+
+*Generated by the `intrinsix` R package. Method: Parker JS, Perou CM et al.,*
+*J Clin Oncol 2009;27(8):1160-1167. See `citation("intrinsix")`.*

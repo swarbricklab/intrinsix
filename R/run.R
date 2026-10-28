@@ -75,10 +75,19 @@
 #' @param config Path to a YAML config, or an already-parsed config list. See
 #'   the bundled template: `system.file("extdata", "config.example.yaml",
 #'   package = "intrinsix")`.
+#' @param report Logical; after the run, also write a single self-contained HTML
+#'   report (the run's visualisations plus a results table, with explanatory
+#'   prose) to the output directory. Default `FALSE` (existing behaviour
+#'   unchanged). Can also be set in the config as `outs$report: true`. Needs the
+#'   `rmarkdown` and `knitr` packages (`Suggests`); if they are missing the report
+#'   is skipped with a warning.
+#' @param report_html Optional path for the HTML report. Implies `report = TRUE`;
+#'   defaults to `<output_dir>/intrinsix_report.html`. Can also be set in the
+#'   config as `outs$report_html`.
 #' @return The [pam50_result], invisibly. Side effect: writes to
 #'   `config$outs$output_dir`.
 #' @export
-pam50_run <- function(config) {
+pam50_run <- function(config, report = FALSE, report_html = NULL) {
   cfg <- if (is.character(config)) yaml::read_yaml(config) else config
   .validate_run_config(cfg)
 
@@ -220,5 +229,15 @@ pam50_run <- function(config) {
   }
 
   message(sprintf("pam50_run: wrote outputs to %s", out))
+
+  # Opt-in HTML report (default off): CLI flag/arg OR config outs$report.
+  report_html <- report_html %||% cfg$outs$report_html
+  want_report <- isTRUE(report) || isTRUE(cfg$outs$report) || !is.null(report_html)
+  if (want_report) {
+    rp <- report_html %||% file.path(out, "intrinsix_report.html")
+    path <- .pam50_report(res, rp, cfg = cfg)
+    if (!is.null(path)) message(sprintf("pam50_run: wrote report to %s", rp))
+  }
+
   invisible(res)
 }
