@@ -23,4 +23,6 @@ dependencies:
   - bioconductor-summarizedexperiment
   - bioconductor-anndatar
   - bioconductor-rhdf5
+  - r-rmarkdown
+  - r-knitr
   - r-testthat
