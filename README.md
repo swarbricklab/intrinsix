@@ -113,6 +113,16 @@ the package (`system.file("extdata", "config.example.yaml", package = "intrinsix
 intrinsix run --config config.yaml           # or: Rscript -e 'intrinsix::pam50_run("config.yaml")'
 ```
 
+It writes a single well-formed call table, `pam50_calls.tsv` (one row per sample:
+a named id column, the carried-through sample metadata, then clean snake_case
+classifier columns — `call`, `confidence`, `score_basal`..`score_normal`, the
+`ror_*` scores, `er_signature`, `her2_signature`, and `call_clow` /
+`silhouette_width` / `sil_width_bin` when clustering is on). Sample metadata is
+inherited from the input's `obs`/`colData` (narrow it with
+`inputs$metadata_columns`); a metadata column that collides with a classifier
+column is an error. Set `classifier.legacy_perou_scores: true` to also emit the
+legacy Perou-format `"<prefix>_pam50scores.txt"` for scripts that expect it.
+
 ### Running environments
 
 The package is pure R, so pick whatever the platform has — **no singularity

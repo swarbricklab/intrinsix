@@ -36,6 +36,13 @@ properties:
           gene IDs. intrinsix maps these to the classifier pcrID via its bundled
           annotation (stable, self-contained — needs no precomputed PAM50 columns).
           Used when pam50_id_col is not set.
+      metadata_columns:
+        type: array
+        items:
+          type: string
+        description: >-
+          Allowlist of sample-metadata columns (from obs/colData, or the `samples`
+          sheet) to carry into pam50_calls.tsv. Omit to carry all metadata columns.
     required: [expression, sample_id_column]
   filter:
     type: object
@@ -79,6 +86,12 @@ properties:
         type: boolean
       prefix:
         type: string
+      legacy_perou_scores:
+        type: boolean
+        description: >-
+          Also emit the legacy Perou-format "<prefix>_pam50scores.txt" (quoted
+          cells, unnamed first column, duplicate Her2) for downstream Perou Lab
+          scripts that expect it. Default false.
     required: [calibration, collapse_method, has_clinical, prefix]
   intrinsic_clustering:
     type: object
