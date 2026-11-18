@@ -33,3 +33,6 @@ jobs:
         run: |
           pkg=$(Rscript -e 'cat(system.file(package = "intrinsix"))')
           "$pkg/exec/intrinsix" --help
+          # the form the README documents outside the container
+          Rscript -e 'intrinsix::cli()' --help
+          Rscript -e 'intrinsix::cli()' run --help

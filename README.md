@@ -94,8 +94,10 @@ Reference data is bundled: `pam50_centroids()`, `pam50_annotation()`,
 
 ## Use from the command line
 
-The same functions, via the `intrinsix` CLI (installed with the package; available as
-`intrinsix` inside the container, or `Rscript -e 'intrinsix::cli()' --args ...`):
+The same functions from the command line. Inside the container the command is
+`intrinsix`. Elsewhere, write `Rscript -e 'intrinsix::cli()'` in its place, for example
+`Rscript -e 'intrinsix::cli()' run --config config.yaml` (no `--args`: `Rscript` adds it
+itself, and a second one reaches `cli()` as the subcommand):
 
 ```bash
 intrinsix classify --expr expr.tsv --out scores.tsv [--map-symbols]
@@ -144,8 +146,8 @@ required**:
 
 | Context | Environment | Invocation |
 |---|---|---|
-| Laptop / interactive | native install (`remotes` + `BiocManager`) | `intrinsix run --config config.yaml` |
-| Reproducible, any OS | **conda** (`environment.yml`) | `conda run -n intrinsix intrinsix run --config config.yaml` |
+| Laptop / interactive | native install (`remotes` + `BiocManager`) | `Rscript -e 'intrinsix::cli()' run --config config.yaml` |
+| Reproducible, any OS | **conda** (`environment.yml`) | `conda run -n intrinsix Rscript -e 'intrinsix::cli()' run --config config.yaml` |
 | HPC, locked-down | singularity image | `module load singularity && singularity exec intrinsix.sif intrinsix run --config config.yaml` |
 
 ```bash
